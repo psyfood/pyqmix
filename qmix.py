@@ -33,7 +33,7 @@ class QmixBus(object):
                                  'labbCAN_Bus_API.dll')
 
         if config_dir is None:
-            self.config_dir = os.path.normpath("C:/Users/Public/Documents/QmixElements/Projects/test2nemesys/Configurations/nemesys")
+            self.config_dir = os.path.normpath('C:/Users/Public/Documents/QmixElements/Projects/test2nemesys/Configurations/nemesys')
         else:
             self.config_dir = config_dir
         
@@ -42,7 +42,7 @@ class QmixBus(object):
         
         self._dll = self._ffi.dlopen(self.dll_file)
         self.is_open = False
-        self.is_stared = False
+        self.is_started = False
         
     def open(self):
         self._dll.LCB_Open(bytes(self.config_dir,'utf8'))
@@ -54,18 +54,15 @@ class QmixBus(object):
     
     def start(self):
         self._dll.LCB_Start()
-        self.is_stared = True
-
+        self.is_started = True
     
     def stop(self):
         self._dll.LCB_Stop()
-        self.is_stared = False
-        
-    
+        self.is_started = False
+            
     def __del__(self):
         self.stop()
         self.close()
-
 
 PUMP_HEADER = """
                      #define LITRES 68 //!< LITRES
@@ -112,9 +109,6 @@ PUMP_HEADER = """
                      long LCP_StopAllPumps();
                      long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
                      long LCP_HasValve(dev_hdl hPump);
-        
-        
-        
                      """
 
 class QmixPump(object):
@@ -138,27 +132,34 @@ class QmixPump(object):
         self._dll.LCP_GetPumpHandle(index, self._handle)
         
         #?? calibrate works even if enable_pump() is not called. ???
-        
-        
+                
     def enable_pump(self):
         self._dll.LCP_Enable(self._handle[0]) 
         
     def is_in_fault_state(self):
-        self._fault = self._dll.LCP_IsInFaultState(self._handle[0])
-        return self._fault
+        return self._dll.LCP_IsInFaultState(self._handle[0])
     
     def clear_fault_state(self):
         self._dll.LCP_ClearFault(self._handle[0])
         
-    def calibrate_pump(self):
+    def calibrate(self):
         self._dll.LCP_SyringePumpCalibrate(self._handle[0])
         
-
     def num_pumps(self):
-        """
-        The number of dosing units.
+        return self._dll.LCP_GetNoOfPumps()
 
-        """
-        self._num_pumps = self._dll.LCP_GetNoOfPumps()
-        return self._num_pumps
+    def set_volume_unit(self, prefix=-3, volume_unit=68): #-3=MILLI, 68=LITRES
+        self._dll.LCP_SetVolumeUnit(self._handle[0], prefix, volume_unit)
+        
+    def set_flow_unit(self, prefix=-3, volume_unit=68, time_unit=1): #1=PER_SECOND
+        self._dll.LCP_SetFlowUnit(self._handle[0], prefix,
+                                  volume_unit, time_unit)
+        
+    def set_syringe_param(self, inner_diameter_mm=23, max_piston_stroke_mm=60):
+        self._dll.LCP_SetSyringeParam(self._handle[0], inner_diameter_mm,
+                                      max_piston_stroke_mm)
+        
+    def aspirate(self, volume, flow):
+        self._dll.LCP_Aspirate(self._handle[0], volume, flow)
 
+        

@@ -15,16 +15,11 @@ ffi.cdef(
         
         
         """
-        typedef long long labb_hdl;
-        
-        typedef long long dev_hdl;
-        
-        long LCB_Open(const char* pDeviceConfigPath);
-        
-        long LCB_Start();
-        
-        long LCB_Stop();
-        
+        typedef long long labb_hdl;      
+        typedef long long dev_hdl;        
+        long LCB_Open(const char* pDeviceConfigPath);        
+        long LCB_Start();        
+        long LCB_Stop();        
         long LCB_Close();
         """
 )
@@ -77,9 +72,6 @@ ffi_pump.cdef(
              long LCP_StopAllPumps();
              long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
              long LCP_HasValve(dev_hdl hPump);
-
-
-
              """
 )
 
@@ -89,7 +81,7 @@ _labbCAN_Pump_API_dll = ffi_pump.dlopen(_dll_path_pump)
 
 
 #%% OPEN
-path = os.path.normpath("C:/Users/Public/Documents/QmixElements/Projects/test2nemesys/Configurations/nemesys")
+path = os.path.normpath('C:/Users/Public/Documents/QmixElements/Projects/test2nemesys/Configurations/nemesys')
 
 test_result_LCB_Open = _labbCAN_Bus_API_dll.LCB_Open(bytes(path,'utf8'))
 
