@@ -6,19 +6,14 @@ Created on Thu May 18 10:58:59 2017
 """
 import os
 from cffi import FFI
-
+import time
 
 BUS_HEADER =  """
-    typedef long long labb_hdl;
-    
-    typedef long long dev_hdl;
-    
-    long LCB_Open(const char* pDeviceConfigPath);
-    
-    long LCB_Start();
-    
-    long LCB_Stop();
-    
+    typedef long long labb_hdl;    
+    typedef long long dev_hdl;    
+    long LCB_Open(const char* pDeviceConfigPath);    
+    long LCB_Start();    
+    long LCB_Stop();    
     long LCB_Close();
  """
 
@@ -124,16 +119,22 @@ class QmixPump(object):
         
         self._ffi = FFI()
         self._ffi.cdef( PUMP_HEADER )
-                     
-                     
+                                          
         self._dll = self._ffi.dlopen(self.dll_file)
         
         self._handle = self._ffi.new('dev_hdl *', 0)
         self._dll.LCP_GetPumpHandle(index, self._handle)
         
-        #?? calibrate works even if enable_pump() is not called. ???
-                
-    def enable_pump(self):
+        self._flow_rate_max = self._ffi.new('double *')
+        
+        self._p_fill_level = self._ffi.new('double *')
+        self._p_dosed_volume = self._ffi.new('double *')
+        self._p_flow_rate = self._ffi.new('double *')
+        
+        self._valve_handle = self._ffi.new('dev_hdl *')
+               
+     #?? calibrate works even if enable_pump() is not called. ???           
+    def enable(self):
         self._dll.LCP_Enable(self._handle[0]) 
         
     def is_in_fault_state(self):
@@ -148,18 +149,91 @@ class QmixPump(object):
     def num_pumps(self):
         return self._dll.LCP_GetNoOfPumps()
 
-    def set_volume_unit(self, prefix=-3, volume_unit=68): #-3=MILLI, 68=LITRES
-        self._dll.LCP_SetVolumeUnit(self._handle[0], prefix, volume_unit)
+    def set_volume_unit(self, prefix=None, unit=None): 
+        self._dll.LCP_SetVolumeUnit(self._handle[0],
+                                    getattr(self._dll, prefix.upper()),
+                                    getattr(self._dll, unit.upper()))
         
-    def set_flow_unit(self, prefix=-3, volume_unit=68, time_unit=1): #1=PER_SECOND
-        self._dll.LCP_SetFlowUnit(self._handle[0], prefix,
-                                  volume_unit, time_unit)
-        
+    def set_flow_unit(self, prefix=None, volume_unit=None, time_unit=None):
+        self._dll.LCP_SetFlowUnit(self._handle[0],
+                                  getattr(self._dll, prefix.upper()),
+                                  getattr(self._dll, volume_unit.upper()),
+                                  getattr(self._dll, time_unit.upper()))
+    
+    # FIND reasonable default parameters
     def set_syringe_param(self, inner_diameter_mm=23, max_piston_stroke_mm=60):
         self._dll.LCP_SetSyringeParam(self._handle[0], inner_diameter_mm,
                                       max_piston_stroke_mm)
+    @property    
+    def max_flow_rate(self):       
+        self._dll.LCP_GetFlowRateMax(self._handle[0], self._flow_rate_max)
+        return self._flow_rate_max[0]
         
-    def aspirate(self, volume, flow):
-        self._dll.LCP_Aspirate(self._handle[0], volume, flow)
+    def aspirate(self, volume, flow_rate):
+        self._dll.LCP_Aspirate(self._handle[0], volume, flow_rate)
+        
+    def dispense(self, volume, flow_rate):
+        self._dll.LCP_Dispense(self._handle[0], volume, flow_rate)
+   
+#    def pump_volume(self, volume, flow_rate): # NOT WORKING WITH NEGATIVE VALUES, TO FIX
+#        self._dll.LCP_PumpVolume(self._handle[0], volume, flow_rate)
+        
+    def set_fill_level(self, level, flow_rate):
+        self._dll.LCP_SetFillLevel(self._handle[0], level, flow_rate)
+        
+    def generate_flow(self, flow_rate):
+        self._dll.LCP_GenerateFlow(self._handle[0], flow_rate)
+        
+    def stop_pumping(self):
+        self._dll.LCP_StopPumping(self._handle[0])
+        
+    def stop_all_pumps(self): # should be callable without a pump object
+        self._dll.LCP_StopAllPumps() #TO FIX
+        
+    def get_dosed_volume(self): # NOT WORKING, TO FIX
+        self._dll.LCP_GetDosedVolume(self._handle, self._p_dosed_volume)
+        return self._p_dosed_volume[0]
+    
+    @property
+    def fill_level(self):
+        self._dll.LCP_GetFillLevel(self._handle[0], self._p_fill_level)
+        return self._p_fill_level[0]
 
+    @property
+    def flow_is(self):
+        self._dll.LCP_GetFlowIs(self._handle[0], self._p_flow_rate)
+        return self._p_flow_rate[0]
+    
+    def is_pumping(self):
+        return self._dll.LCP_IsPumping(self._handle[0]) 
+    
+    def has_valve(self): #NOT WORKING; returns always 1
+        return self._dll.LCP_HasValve(self._handle[0])
+    
+    def get_valve_handle(self):
+        self._dll.LCP_GetValveHandle(self._handle[0], self._valve_handle)
+        return self._valve_handle[0]
+    
+    
+#%% TEST
+a = QmixBus()
+a.open()    
+time.sleep(1)
+a.start()
+time.sleep(1)
+
+b = QmixPump(index=0)
+c = QmixPump(index=1)
+
+b.enable()
+c.enable()
+
+b.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+c.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")    
+
+b.set_volume_unit(prefix="milli", unit="litres")    
+c.set_volume_unit(prefix="milli", unit="litres")   
+    
+b.set_syringe_param()
+c.set_syringe_param()
         
