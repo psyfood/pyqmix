@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Plugin>
+    <DeviceDatabaseNetworkPath></DeviceDatabaseNetworkPath>
+    <log4cplus>
+        log4cplus.logger.QMixDevicesLogger=WARN, LogAppender
+    </log4cplus>
+    <PluginLogger>QMixDevicesLogger</PluginLogger>
+    <ReadOnlyConfigurations>
+        <ReadOnlyConfiguration>default</ReadOnlyConfiguration>
+        <ReadOnlyConfiguration>demo</ReadOnlyConfiguration>
+        <ReadOnlyConfiguration>qmixdevices_network</ReadOnlyConfiguration>
+    </ReadOnlyConfigurations>
+</Plugin>
