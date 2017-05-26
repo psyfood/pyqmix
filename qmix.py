@@ -28,7 +28,7 @@ class QmixBus(object):
                                  'labbCAN_Bus_API.dll')
 
         if config_dir is None:
-            self.config_dir = os.path.normpath('C:/Users/Public/Documents/QmixElements/Projects/test2nemesys/Configurations/nemesys')
+            self.config_dir = os.path.normpath('C:/Users/Public/Documents/QmixElements/Projects/test/Configurations/test')
         else:
             self.config_dir = config_dir
         
@@ -135,7 +135,8 @@ class QmixPump(object):
         self._p_dosed_volume = self._ffi.new('double *')
         self._p_flow_rate = self._ffi.new('double *')
         
-        self._valve_handle = self._ffi.new('dev_hdl *',0)
+        self._valve_handle = self._ffi.new('dev_hdl *', 0)
+        self.valve = QmixValve(handle=self._valve_handle)
         
         if self.is_in_fault_state:
             self.clear_fault_state()
@@ -194,27 +195,40 @@ class QmixPump(object):
         return self._flow_rate_max[0]
         
     def aspirate(self, volume, flow_rate, blocking_wait=False):
+        self.valve.switch_position(1)
         self._dll.LCP_Aspirate(self._handle[0], volume, flow_rate)        
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
                 
-    def dispense(self, volume, flow_rate, blocking_wait=False):
+    def dispense(self, volume, flow_rate, blocking_wait=False, 
+                             switch_valve_when_finished=False):
+        self.valve.switch_position(0)
         self._dll.LCP_Dispense(self._handle[0], volume, flow_rate)        
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
+            if switch_valve_when_finished:
+                self.valve.switch_position(1)
        
 #    def pump_volume(self, volume, flow_rate): # NOT WORKING WITH NEGATIVE VALUES, TO FIX
 #        self._dll.LCP_PumpVolume(self._handle[0], volume, flow_rate)
         
     def set_fill_level(self, level, flow_rate, blocking_wait=False):
+        if level < self.get_fill_level():
+            self.valve.switch_position(0)
+        else:
+            self.valve.switch_position(1)        
         self._dll.LCP_SetFillLevel(self._handle[0], level, flow_rate)       
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
         
     def generate_flow(self, flow_rate, blocking_wait=False):
+        if flow_rate > 0:
+            self.valve.switch_position(0)
+        else:
+            self.valve.switch_position(1)            
         self._dll.LCP_GenerateFlow(self._handle[0], flow_rate)
         if blocking_wait:
             while self.is_pumping:
@@ -271,7 +285,7 @@ VALVE_HEADER =  """
  """
 
 class QmixValve(object):
-    def __init__(self, dll_dir=None, index=0, optional_handle=None):
+    def __init__(self, dll_dir=None, index=0, handle=None):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
         else:
@@ -285,23 +299,68 @@ class QmixValve(object):
                                           
         self._dll = self._ffi.dlopen(self.dll_file)
         
-        self._handle = self._ffi.new('dev_hdl *', 0)
-        self._dll.LCV_GetValveHandle(index, self._handle)
-        
-        if optional_handle is not None:
-            self._handle = optional_handle
-    
+        if handle is None:
+            self.index = index
+            self._handle = self._ffi.new('dev_hdl *', 0)
+            self._dll.LCV_GetValveHandle(self._index, self._handle)
+        else:
+            self.index = None
+            self._handle = handle
+
     @property
-    def number_of_valve_positions(self):
+    def number_of_positions(self):
         return self._dll.LCV_NumberOfValvePositions(self._handle[0])
     
     @property
-    def current_valve_position(self):
+    def current_position(self):
         return self._dll.LCV_ActualValvePosition(self._handle[0])
     
-    def switch_valve_to_position(self, position=0):
+    def switch_position(self, position=0):
         return self._dll.LCV_SwitchValveToPosition(self._handle[0], position)
+
     
+DIGITAL_IO_HEADER =  """
+    typedef long long dev_hdl;
+    long LCDIO_LookupOutChanByName(const char* pChannelName, dev_hdl *   pOutChanHdl);
+    long LCDIO_LookupInChanByName(const char* pChannelName, dev_hdl*    pInChanHdl);
+    long LCDIO_WriteOn(dev_hdl OutChanHdl, int On);
+    long LCDIO_IsOutputOn(dev_hdl OutChanHdl);
+    long LCDIO_IsInputOn(dev_hdl InChanHdl);
+    long LCDIO_GetChanName(dev_hdl  hChan, char    *pNameStringBuf,
+                                            int      StringBufSize);
+    long LCDIO_LookupIoDeviceByName(const char *pName,
+                                                     dev_hdl    *pIoDeviceHdl);
+    
+ """
+
+class QmixDigitalIO(object):
+    def __init__(self, dll_dir=None, index=0):
+        if dll_dir is None:
+            self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
+        else:
+            self.dll_dir = dll_dir
+            
+        self.dll_file = os.path.join(self.dll_dir,
+                                 'labbCAN_DigIO_API.dll')
+        self._ffi = FFI()
+        self._ffi.cdef(DIGITAL_IO_HEADER)
+                                          
+        self._dll = self._ffi.dlopen(self.dll_file)
+        
+        self._handle = self._ffi.new('dev_hdl *', 0)
+        
+        self._ch_name="QmixIO_B_1_DO"
+        self._channel = self._ch_name + str(index) 
+        self._dll.LCDIO_LookupOutChanByName(bytes(self._channel,'utf8'), self._handle)
+        
+    @property
+    def is_output_on(self):
+        r = self._dll.LCDIO_IsOutputOn(self._handle[0])
+        return bool(r)
+    
+    def write_on(self, state):
+        self._dll.LCDIO_WriteOn(self._handle[0], state)
+        
 #%% TEST
 a = QmixBus()
 a.open()    
@@ -322,6 +381,80 @@ c.set_volume_unit(prefix="milli", unit="litres")
 b.set_syringe_param()
 c.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
         
-d = QmixValve()
-e = QmixValve(index=1)
+ch0 = QmixDigitalIO(index=0)
+ch1 = QmixDigitalIO(index=1)
+ch2 = QmixDigitalIO(index=2)
+ch3 = QmixDigitalIO(index=3)
+ch4 = QmixDigitalIO(index=4)
+ch5 = QmixDigitalIO(index=5)
+ch6 = QmixDigitalIO(index=6)
+ch7 = QmixDigitalIO(index=7)
+
+
+#%% TEST2
+c.aspirate(15, 1, blocking_wait=True)
+time.sleep(1.5)
+c.dispense(15, 3, blocking_wait=True)
+c.aspirate(15, 1, blocking_wait=True)
+time.sleep(1.5)
+c.dispense(15, 3, blocking_wait=True)
+c.aspirate(15, 1, blocking_wait=True)
+time.sleep(1.5)
+c.dispense(15, 3, blocking_wait=True)
+
+#%% TEST 3
+time.sleep(3)
+ch0.write_on(1)
+time.sleep(1.5)
+ch1.write_on(1)
+time.sleep(1.5)
+ch2.write_on(1)
+time.sleep(1.5)
+ch3.write_on(1)
+time.sleep(1.5)
+ch4.write_on(1)
+time.sleep(1.5)
+ch5.write_on(1)
+time.sleep(1.5)
+ch6.write_on(1)
+time.sleep(1.5)
+ch7.write_on(1)
+time.sleep(1.5)
+
+ch0.write_on(0)
+ch1.write_on(0)
+ch2.write_on(0)
+ch3.write_on(0)
+ch4.write_on(0)
+ch5.write_on(0)
+ch6.write_on(0)
+ch7.write_on(0)
+time.sleep(2.5)
+
+ch0.write_on(1)
+ch1.write_on(1)
+ch2.write_on(1)
+ch3.write_on(1)
+ch4.write_on(1)
+ch5.write_on(1)
+ch6.write_on(1)
+ch7.write_on(1)
+time.sleep(2.5)
+
+ch7.write_on(0)
+time.sleep(1.5)
+ch6.write_on(0)
+time.sleep(1.5)
+ch5.write_on(0)
+time.sleep(1.5)
+ch4.write_on(0)
+time.sleep(1.5)
+ch3.write_on(0)
+time.sleep(1.5)
+ch2.write_on(0)
+time.sleep(1.5)
+ch1.write_on(0)
+time.sleep(1.5)
+ch0.write_on(0)
+time.sleep(1.5)
 
