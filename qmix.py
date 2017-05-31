@@ -3,10 +3,25 @@
 Created on Thu May 18 10:58:59 2017
 
 @author: alfine-l
+
 """
 import os
 from cffi import FFI
 import time
+
+def CHK(return_code, funcname, *args):
+    """
+
+    """
+    if return_code >= 0:
+        return return_code
+    else:  # Error.
+#        error_message = get_error_message(return_code)
+#        raise NemesysRuntimeError(
+#            '%s%s failed with error %s: %s' %
+#            (funcname, args, hex(return_code), error_message)
+#        )
+        print('ERROR - TEST CHK - ERROR') #TODO: implement
 
 BUS_HEADER =  """
     typedef long long labb_hdl;    
@@ -38,28 +53,44 @@ class QmixBus(object):
         self._dll = self._ffi.dlopen(self.dll_file)
         self.is_open = False
         self.is_started = False
+
+    def CALL(self, name, *args):
+        funcname = name
         
+        func = getattr(self._dll, funcname)
+        new_args = []
+        for a in args:
+            new_args.append(a)
+        r = func(*new_args)
+        r = CHK(r, funcname, *new_args)
+        return r    
+                  
     def open(self):
-        self._dll.LCB_Open(bytes(self.config_dir,'utf8'))
+#        self._dll.LCB_Open(bytes(self.config_dir,'utf8'))
+        self.CALL('LCB_Open', bytes(self.config_dir,'utf8'))
         time.sleep(1)
         self.is_open = True
     
     def close(self):
-        self._dll.LCB_Close()
+#        self._dll.LCB_Close()
+        self.CALL('LCB_Close')
         self.is_open = False
     
     def start(self):
-        self._dll.LCB_Start()
+#        self._dll.LCB_Start()
+        self.CALL('LCB_Start')
         time.sleep(1)
         self.is_started = True
     
     def stop(self):
-        self._dll.LCB_Stop()
+#        self._dll.LCB_Stop()
+        self.CALL('LCB_Stop')
         self.is_started = False
             
     def __del__(self):
         self.stop()
         self.close()
+        
 
 PUMP_HEADER = """
                      #define LITRES 68 //!< LITRES
@@ -108,6 +139,8 @@ PUMP_HEADER = """
                      long LCP_StopAllPumps();
                      long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
                      long LCP_HasValve(dev_hdl hPump);
+                     long LCP_GetDrivePosCnt(dev_hdl hPump, long *pPosCntValue);
+                     long LCP_RestoreDrivePosCnt(dev_hdl hPump, long PosCntValue);
                      """
 
 class QmixPump(object):
@@ -127,8 +160,9 @@ class QmixPump(object):
         self._dll = self._ffi.dlopen(self.dll_file)
         
         self._handle = self._ffi.new('dev_hdl *', 0)
-        self._dll.LCP_GetPumpHandle(index, self._handle)
-        
+#        self._dll.LCP_GetPumpHandle(index, self._handle)
+        self.CALL('LCP_GetPumpHandle', index, self._handle)        
+
         self._flow_rate_max = self._ffi.new('double *')
         
         self._p_fill_level = self._ffi.new('double *')
@@ -142,69 +176,106 @@ class QmixPump(object):
             self.clear_fault_state()
         if not self.is_enabled:
             self.enable()
+                   
             
-               
+    def CALL(self, name, *args):
+        funcname = name
+        
+        func = getattr(self._dll, funcname)
+        new_args = []
+        for a in args:
+            new_args.append(a)
+        r = func(*new_args)
+        r = CHK(r, funcname, *new_args)
+        return r    
+           
     @property    
     def is_enabled(self):
-        r = self._dll.LCP_IsEnabled(self._handle[0])
-        return bool(r)
+#        r = self._dll.LCP_IsEnabled(self._handle[0])
+#        return bool(r)
+        return self.CALL('LCP_IsEnabled', self._handle[0])
            
     def enable(self):
-        self._dll.LCP_Enable(self._handle[0]) 
+#        self._dll.LCP_Enable(self._handle[0]) 
+        return self.CALL('LCP_Enable',self._handle[0])
     
     @property    
     def is_in_fault_state(self):
-        r = self._dll.LCP_IsInFaultState(self._handle[0])
-        return bool(r)
-    
+#        r = self._dll.LCP_IsInFaultState(self._handle[0])
+#        return bool(r)
+        return self.CALL('LCP_IsInFaultState', self._handle[0])    
+
     def clear_fault_state(self):
-        self._dll.LCP_ClearFault(self._handle[0])
-        
-    @property
+#        self._dll.LCP_ClearFault(self._handle[0])
+        return self.CALL('LCP_ClearFault', self._handle[0])        
+
+    @property #TODO: after the first calibration, different resultss
     def is_calibrating(self):
-        r = self._dll.LCP_IsCalibrationFinished(self._handle[0])
-        return bool(r)
-        
+#        r = self._dll.LCP_IsCalibrationFinished(self._handle[0])
+#        return bool(r)
+        r = self.CALL('LCP_IsCalibrationFinished', self._handle[0])
+        if r == 0:
+            return True
+        else:
+            return False
+
     def calibrate(self):
-        self._dll.LCP_SyringePumpCalibrate(self._handle[0])
+#        self._dll.LCP_SyringePumpCalibrate(self._handle[0])
+        self.CALL('LCP_SyringePumpCalibrate', self._handle[0])
         while self.is_calibrating:
             time.sleep(0.0005)
             
     @property    
     def n_pumps(self):
-        return self._dll.LCP_GetNoOfPumps()
+#        return self._dll.LCP_GetNoOfPumps()
+        return self.CALL('LCP_GetNoOfPumps')
 
     def set_volume_unit(self, prefix=None, unit=None): 
-        self._dll.LCP_SetVolumeUnit(self._handle[0],
+#        self._dll.LCP_SetVolumeUnit(self._handle[0],
+#                                    getattr(self._dll, prefix.upper()),
+#                                    getattr(self._dll, unit.upper()))
+        self.CALL('LCP_SetVolumeUnit', self._handle[0],
                                     getattr(self._dll, prefix.upper()),
                                     getattr(self._dll, unit.upper()))
         
     def set_flow_unit(self, prefix=None, volume_unit=None, time_unit=None):
-        self._dll.LCP_SetFlowUnit(self._handle[0],
+#        self._dll.LCP_SetFlowUnit(self._handle[0],
+#                                  getattr(self._dll, prefix.upper()),
+#                                  getattr(self._dll, volume_unit.upper()),
+#                                  getattr(self._dll, time_unit.upper()))
+        self.CALL('LCP_SetFlowUnit', self._handle[0],
                                   getattr(self._dll, prefix.upper()),
                                   getattr(self._dll, volume_unit.upper()),
                                   getattr(self._dll, time_unit.upper()))
     
     # TODO: find reasonable default parameters
     def set_syringe_param(self, inner_diameter_mm=23, max_piston_stroke_mm=60):
-        self._dll.LCP_SetSyringeParam(self._handle[0], inner_diameter_mm,
+#        self._dll.LCP_SetSyringeParam(self._handle[0], inner_diameter_mm,
+#                                      max_piston_stroke_mm)
+        self.CALL('LCP_SetSyringeParam', self._handle[0], inner_diameter_mm,
                                       max_piston_stroke_mm)
     @property    
     def max_flow_rate(self):       
-        self._dll.LCP_GetFlowRateMax(self._handle[0], self._flow_rate_max)
+#        self._dll.LCP_GetFlowRateMax(self._handle[0], self._flow_rate_max)
+#        return self._flow_rate_max[0]
+        self.CALL('LCP_GetFlowRateMax', self._handle[0], self._flow_rate_max)
         return self._flow_rate_max[0]
-        
+    
+    # TODO: First call after physical start is bugged (behaves like a calibration)       
     def aspirate(self, volume, flow_rate, blocking_wait=False):
         self.valve.switch_position(1)
-        self._dll.LCP_Aspirate(self._handle[0], volume, flow_rate)        
+#        self._dll.LCP_Aspirate(self._handle[0], volume, flow_rate) 
+        self.CALL('LCP_Aspirate', self._handle[0], volume, flow_rate)       
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
+
                 
     def dispense(self, volume, flow_rate, blocking_wait=False, 
                              switch_valve_when_finished=False):
         self.valve.switch_position(0)
-        self._dll.LCP_Dispense(self._handle[0], volume, flow_rate)        
+#        self._dll.LCP_Dispense(self._handle[0], volume, flow_rate)
+        self.CALL('LCP_Dispense', self._handle[0], volume, flow_rate)        
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
@@ -219,7 +290,8 @@ class QmixPump(object):
             self.valve.switch_position(0)
         else:
             self.valve.switch_position(1)        
-        self._dll.LCP_SetFillLevel(self._handle[0], level, flow_rate)       
+#        self._dll.LCP_SetFillLevel(self._handle[0], level, flow_rate) 
+        self.CALL('LCP_SetFillLevel', self._handle[0], level, flow_rate)      
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
@@ -229,44 +301,53 @@ class QmixPump(object):
             self.valve.switch_position(0)
         else:
             self.valve.switch_position(1)            
-        self._dll.LCP_GenerateFlow(self._handle[0], flow_rate)
+#        self._dll.LCP_GenerateFlow(self._handle[0], flow_rate)
+        self.CALL('LCP_GenerateFlow', self._handle[0], flow_rate)
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
         
     def stop(self):
-        self._dll.LCP_StopPumping(self._handle[0])
+#        self._dll.LCP_StopPumping(self._handle[0])
+        self.CALL('LCP_StopPumping', self._handle[0])
         
     def stop_all_pumps(self): # should be callable without a pump object
-        self._dll.LCP_StopAllPumps() #TO FIX
+#        self._dll.LCP_StopAllPumps() #TO FIX
+        self.CALL('LCP_StopAllPumps')
     
     @property    
     def dosed_volume(self):
-        self._dll.LCP_GetDosedVolume(self._handle[0], self._p_dosed_volume)
+#        self._dll.LCP_GetDosedVolume(self._handle[0], self._p_dosed_volume)
+        self.CALL('LCP_GetDosedVolume', self._handle[0], self._p_dosed_volume)
         return self._p_dosed_volume[0]
     
     def get_fill_level(self):
-        self._dll.LCP_GetFillLevel(self._handle[0], self._p_fill_level)
+#        self._dll.LCP_GetFillLevel(self._handle[0], self._p_fill_level)
+        self.CALL('LCP_GetFillLevel', self._handle[0], self._p_fill_level)
         return self._p_fill_level[0]
 
     @property
     def current_flow_rate(self):
-        self._dll.LCP_GetFlowIs(self._handle[0], self._p_flow_rate)
+#        self._dll.LCP_GetFlowIs(self._handle[0], self._p_flow_rate)
+        self.CALL('LCP_GetFlowIs', self._handle[0], self._p_flow_rate)
         return self._p_flow_rate[0]
     
     @property
     def is_pumping(self):
-        r = self._dll.LCP_IsPumping(self._handle[0]) 
+#        r = self._dll.LCP_IsPumping(self._handle[0])
+        r = self.CALL('LCP_IsPumping', self._handle[0]) 
         return bool(r)
     
     @property
     def has_valve(self): #NOT WORKING; returns always 1
-        r = self._dll.LCP_HasValve(self._handle[0])
+#        r = self._dll.LCP_HasValve(self._handle[0])
+        r = self.CALL('LCP_HasValve', self._handle[0])
         return bool(r)
     
     @property
     def valve_handle(self):
-        self._dll.LCP_GetValveHandle(self._handle[0], self._valve_handle)
+#        self._dll.LCP_GetValveHandle(self._handle[0], self._valve_handle)
+        self.CALL('LCP_GetValveHandle', self._handle[0], self._valve_handle)
         return self._valve_handle[0]
 
 
@@ -302,22 +383,36 @@ class QmixValve(object):
         if handle is None:
             self.index = index
             self._handle = self._ffi.new('dev_hdl *', 0)
-            self._dll.LCV_GetValveHandle(self._index, self._handle)
+#            self._dll.LCV_GetValveHandle(self.index, self._handle)
+            self.CALL('LCV_GetValveHandle', self.index, self._handle)
         else:
             self.index = None
             self._handle = handle
 
+    def CALL(self, name, *args):
+        funcname = name
+        
+        func = getattr(self._dll, funcname)
+        new_args = []
+        for a in args:
+            new_args.append(a)
+        r = func(*new_args)
+        r = CHK(r, funcname, *new_args)
+        return r 
+
     @property
     def number_of_positions(self):
-        return self._dll.LCV_NumberOfValvePositions(self._handle[0])
+#        return self._dll.LCV_NumberOfValvePositions(self._handle[0])
+        return self.CALL('LCV_NumberOfValvePositions', self._handle[0])
     
     @property
     def current_position(self):
-        return self._dll.LCV_ActualValvePosition(self._handle[0])
+#        return self._dll.LCV_ActualValvePosition(self._handle[0])
+        return self.CALL('LCV_ActualValvePosition', self._handle[0])
     
     def switch_position(self, position=0):
-        return self._dll.LCV_SwitchValveToPosition(self._handle[0], position)
-
+#        return self._dll.LCV_SwitchValveToPosition(self._handle[0], position)
+        return self.CALL('LCV_SwitchValveToPosition', self._handle[0], position)
     
 DIGITAL_IO_HEADER =  """
     typedef long long dev_hdl;
@@ -351,15 +446,29 @@ class QmixDigitalIO(object):
         
         self._ch_name="QmixIO_B_1_DO"
         self._channel = self._ch_name + str(index) 
-        self._dll.LCDIO_LookupOutChanByName(bytes(self._channel,'utf8'), self._handle)
+#        self._dll.LCDIO_LookupOutChanByName(bytes(self._channel,'utf8'), self._handle)
+        self.CALL('LCDIO_LookupOutChanByName', bytes(self._channel,'utf8'), self._handle)
+
+    def CALL(self, name, *args):
+        funcname = name
+        
+        func = getattr(self._dll, funcname)
+        new_args = []
+        for a in args:
+            new_args.append(a)
+        r = func(*new_args)
+        r = CHK(r, funcname, *new_args)
+        return r 
         
     @property
     def is_output_on(self):
-        r = self._dll.LCDIO_IsOutputOn(self._handle[0])
+#        r = self._dll.LCDIO_IsOutputOn(self._handle[0])
+        r = self.CALL('LCDIO_IsOutputOn', self._handle[0])
         return bool(r)
     
     def write_on(self, state):
-        self._dll.LCDIO_WriteOn(self._handle[0], state)
+#        self._dll.LCDIO_WriteOn(self._handle[0], state)
+        self.CALL('LCDIO_WriteOn', self._handle[0], state)
         
 #%% TEST
 a = QmixBus()
@@ -390,17 +499,16 @@ ch5 = QmixDigitalIO(index=5)
 ch6 = QmixDigitalIO(index=6)
 ch7 = QmixDigitalIO(index=7)
 
+#TEST3 = QmixPump(index=2)
+#TEST3.enable()
+#TEST3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+#TEST3.set_volume_unit(prefix="milli", unit="litres") 
+#TEST3.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
 
 #%% TEST2
-c.aspirate(15, 1, blocking_wait=True)
-time.sleep(1.5)
-c.dispense(15, 3, blocking_wait=True)
-c.aspirate(15, 1, blocking_wait=True)
-time.sleep(1.5)
-c.dispense(15, 3, blocking_wait=True)
-c.aspirate(15, 1, blocking_wait=True)
-time.sleep(1.5)
-c.dispense(15, 3, blocking_wait=True)
+b.valve.current_position
+b.valve.switch_position(position=0)
+c._dll.LCP_Aspirate(c._handle[0], 10, 2) 
 
 #%% TEST 3
 time.sleep(3)
