@@ -21,10 +21,12 @@ def CHK(return_code, funcname, *args):
 #            '%s%s failed with error %s: %s' %
 #            (funcname, args, hex(return_code), error_message)
 #        )
-        tmp_error = QmixError(-return_code)
-        error_string = tmp_error.error_string
-        print("ERROR: {}, Error number: {}, Error code {}".format(error_string,
-              tmp_error.error_number, tmp_error.error_code)) #TODO: implement
+        e = QmixError(return_code)
+        error_string = e.error_string
+        # print("ERROR: {}, Error number: {}, Error code {}".format(error_string,
+        #       e.error_number, e.error_code)) #TODO: implement
+        msg = f'{error_string}, Error number: {e.error_number}, Error code {e.error_code}'
+        raise RuntimeError(msg)
 
 BUS_HEADER =  """
     typedef long long labb_hdl;    
@@ -412,13 +414,7 @@ class QmixValve(object):
     
     def switch_position(self, position=0):
 #        return self._dll.LCV_SwitchValveToPosition(self._handle[0], position)
-        old_position = self.current_position
-        
-        print('Old valve pos: %i' % old_position)
-        
         self._call('LCV_SwitchValveToPosition', self._handle[0], position)
-        print('New valve pos (before while loop): %i' % self.current_position)
-        # time.sleep(1)
     
 DIGITAL_IO_HEADER =  """
     typedef long long dev_hdl;
@@ -473,7 +469,7 @@ class QmixDigitalIO(object):
  
 #TODO: lines with /* */ are commented becaus they raise an error in the parser      
 ERROR_HEADER = """
-/*    #define USL_DECL */
+    #define USL_DECL ... 
     typedef int32_t TErrCode;
     const char* ErrorToString(TErrCode ErrCode);
     TErrCode errnoToErrCode(int errnum);
@@ -490,7 +486,7 @@ ERROR_HEADER = """
     #define ERR_BADF            0x0009     ///< Bad file handle
     #define ERR_MLINK           0x000A     ///< Too many links
     #define ERR_AGAIN           0x000B     ///< Try again later
-/*   #define ERR_WOULDBLOCK      ERR_AGAIN ///< \see ERR_AGAIN */
+    #define ERR_WOULDBLOCK      0x000B ///< \see ERR_AGAIN 
     #define ERR_NOMEM           0x000C    ///< Out of memory 
     #define ERR_ACCES			0x000D	  ///< Permission denied
     #define ERR_FAULT			0x000E	  ///< Bad address
@@ -513,7 +509,7 @@ ERROR_HEADER = """
     #define ERR_DOM             0x0021    ///< Argument to math function outside valid domain
     #define ERR_RANGE           0x0022    ///< Math result cannot be represented
     #define ERR_DEADLK          0x0023    ///< Resource deadlock would occur 
-/*    #define ERR_DEADLOCK        ERR_DEADLK///< \see ERR_DEADLK */
+    #define ERR_DEADLOCK        0x0023 ///< \see ERR_DEADLK */
     #define ERR_CANCELED        0x0024    ///< Operation canceled
     #define ERR_OVERFLOW        0x0025    ///< Value too large
     #define ERR_NOSYS           0x0026    ///< Function not implemented
@@ -707,21 +703,17 @@ class QmixError(object):
         
         self.error_number = error_number
         self._error_code = self._ffi.new('TErrCode *')
-        
-    def _call(self, func_name, *args):
-        func = getattr(self._dll, func_name)
-        r = func(*args)
-        r = CHK(r, func_name, *args)
-        return r
     
     @property
     def error_code(self):
-        self._error_code = self._dll.errnoToErrCode(self.error_number)
+#        self._error_code = self._dll.errnoToErrCode(self.error_number)
+        self._error_code = hex(abs(self.error_number))
         return self._error_code
     
     @property
     def error_string(self):
-        s = self._dll.ErrorToString(self.error_code)
+        e = self.error_code
+        s = self._dll.ErrorToString(int(e, 16))
         return self._ffi.string(s).decode('utf8')
         
     
