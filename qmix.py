@@ -11,20 +11,37 @@ import time
 
 def CHK(return_code, funcname, *args):
     """
+    Check if the return value of the invoked function returned an error.
+
+    The Qmix DLL makes this pretty easy: All errors are indicated by
+    negative return values.
+
+    Parameters
+    ----------
+    return_code : int
+        The code returned from a Qmix DLL function.
+    funcname : str
+        The name of the invoked DLL function.
+    args
+        All arguments passed to the function ``funcname``.
+
+    Returns
+    -------
+    return_code : int
+        If no error occurred, the originally passed return value is
+        returned.
+
+    Raises
+    ------
+    RuntimeError
+        If the DLL function returned an error code.
 
     """
     if return_code >= 0:
         return return_code
-    else:  # Error.
-#        error_message = get_error_message(return_code)
-#        raise NemesysRuntimeError(
-#            '%s%s failed with error %s: %s' %
-#            (funcname, args, hex(return_code), error_message)
-#        )
-        e = QmixError(return_code)
+    else:  
+        e = _QmixError(return_code)
         error_string = e.error_string
-        # print("ERROR: {}, Error number: {}, Error code {}".format(error_string,
-        #       e.error_number, e.error_code)) #TODO: implement
         msg = f'{error_string}, Error number: {e.error_number}, Error code {e.error_code}'
         raise RuntimeError(msg)
 
@@ -38,6 +55,20 @@ BUS_HEADER =  """
  """
 
 class QmixBus(object):
+    """
+    It establishes the communication between the bus and the devices.
+    
+    First class that has to be initialized.
+
+    Parameters
+    ----------
+    config_dir : str
+        Absolute path to the folder that contains the device configuration files (XML config files).
+        
+    dll_dir : str
+        Absolute path to the folder that contains Qmix .dll files.
+        
+    """     
     def __init__(self, config_dir=None, dll_dir=None):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
@@ -66,24 +97,70 @@ class QmixBus(object):
         return r     
                   
     def open(self):
-#        self._dll.LCB_Open(bytes(self.config_dir,'utf8'))
+        """
+        Initialize LabCanBus instance.
+        
+        Initializes resources for a LabCanBus instance, connects to LabCanBus and scans for connected devices.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """        
         self._call('LCB_Open', bytes(self.config_dir,'utf8'))
         time.sleep(1)
         self.is_open = True
     
     def close(self):
-#        self._dll.LCB_Close()
+        """
+        Close LabCanBus instance.
+        
+        This call deletes all internal data structures and frees all allocated resources.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """          
         self._call('LCB_Close')
         self.is_open = False
     
     def start(self):
-#        self._dll.LCB_Start()
+        """
+        Start network communication.
+        
+        This function sets all connected devices into state operational and enabled.
+        After a call to this function it is possible to access the connected devices.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """         
         self._call('LCB_Start')
         time.sleep(1)
         self.is_started = True
     
     def stop(self):
-#        self._dll.LCB_Stop()
+        """
+        Stop network communication.
+        
+        This function stops network communication and closes the CAN device driver.
+        The function should be called by application before ``QmixBus.close()``.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """         
         self._call('LCB_Stop')
         self.is_started = False
             
@@ -144,7 +221,19 @@ PUMP_HEADER = """
                      """
 
 class QmixPump(object):
+    """
+    Istantiate a pump object.
 
+    Parameters
+    ----------
+    dll_dir : str
+        Absolute path to the folder that contains Qmix .dll files.
+        
+    index : int
+        Index of the pump to istantiate. It is related with the config files.
+        First pump has ``index = 0``, second has ``index = 1`` and so on.
+        
+    """
     def __init__(self, dll_dir=None, index=0):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
@@ -160,7 +249,6 @@ class QmixPump(object):
         self._dll = self._ffi.dlopen(self.dll_file)
         
         self._handle = self._ffi.new('dev_hdl *', 0)
-#        self._dll.LCP_GetPumpHandle(index, self._handle)
         self._call('LCP_GetPumpHandle', index, self._handle)        
 
         self._flow_rate_max = self._ffi.new('double *')
@@ -186,37 +274,95 @@ class QmixPump(object):
            
     @property    
     def is_enabled(self):
-#        r = self._dll.LCP_IsEnabled(self._handle[0])
-#        return bool(r)
+        """
+        Query if pump drive is enabled.
+        
+        Only if the pump drive is enabled it is possible to pump fluid.
+        
+        Returns
+        -------
+        int                 
+            1	- Pump drive is enabled, pumping is possible
+            0	- Pump drive is disabled - pump head is free running
+
+        """        
         return self._call('LCP_IsEnabled', self._handle[0])
            
     def enable(self):
-#        self._dll.LCP_Enable(self._handle[0]) 
+        """
+        Set axis into enabled state.
+        
+        If the function ``QmixPump.is_enabled()`` indicates that the device is disabled then call this function.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """            
         return self._call('LCP_Enable',self._handle[0])
     
     @property    
     def is_in_fault_state(self):
-#        r = self._dll.LCP_IsInFaultState(self._handle[0])
-#        return bool(r)
+        """
+        Check if pump is in a fault state.
+
+        If the device is in fault state then it is necessary to call ``QmixPump.clear_fault_state()``
+        to clear the fault state and then ``QmixPump.enable()`` to enable the pump drive.
+        
+        Returns
+        -------
+        int                 
+            1	- Pump is in fault state
+            0	- Pump is not in fault state
+
+        """         
         return self._call('LCP_IsInFaultState', self._handle[0])    
 
     def clear_fault_state(self):
-#        self._dll.LCP_ClearFault(self._handle[0])
+        """
+        Clear fault condition.
+        
+        This is some kind of error acknowledge that clears the last fault and sets the 
+        device in an error free state. If the function ``QmixPump.is_in_fault_state()`` 
+        indicates that device is in fault state, then this function may clear the fault.
+        If the device is still in fault state after this function was called then a serious failure occurred.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        """         
         return self._call('LCP_ClearFault', self._handle[0])        
 
-    @property #TODO: after the first calibration, different resultss
-    def is_calibrating(self):
-#        r = self._dll.LCP_IsCalibrationFinished(self._handle[0])
-#        return bool(r)
+    @property 
+    def is_calibration_finished(self):
+        """
+        Checks if calibration is finished or performed.
+        
+        Returns
+        -------
+        int                                
+            0	- Device is calibrating
+            1	- Device calibration has finished/was perfomed
+
+        """         
         r = self._call('LCP_IsCalibrationFinished', self._handle[0])
         if r == 0:
-            return True
-        else:
             return False
+        else:
+            return True
 
     def calibrate(self, blocking_wait=True):
         """
-        Perform a calibration move.
+        Executes a reference move for a syringe pump.
+        
+        .. warning::     Executing the calibration move with a syringe
+                         fitted on the device may cause damage to the
+                         syringe.        
 
         Parameters
         ----------
@@ -224,31 +370,70 @@ class QmixPump(object):
             Whether to block until done.
 
         """
-#        self._dll.LCP_SyringePumpCalibrate(self._handle[0])
         self._call('LCP_SyringePumpCalibrate', self._handle[0])
         
         if blocking_wait:
-            while self.is_calibrating:
+            while not self.is_calibration_finished:
                 time.sleep(0.0005)
             
     @property    
     def n_pumps(self):
-#        return self._dll.LCP_GetNoOfPumps()
+        """
+        The number of dosing units.
+        
+        Returns
+        -------
+        int                                
+            >=	0 Number of detected pump devices
+
+        """          
         return self._call('LCP_GetNoOfPumps')
 
-    def set_volume_unit(self, prefix=None, unit=None): 
-#        self._dll.LCP_SetVolumeUnit(self._handle[0],
-#                                    getattr(self._dll, prefix.upper()),
-#                                    getattr(self._dll, unit.upper()))
+    def set_volume_unit(self, prefix=None, unit=None):
+        """
+        This function sets the default volume unit.
+        
+        All parameters of subsequent dosing function calls are given in this new unit.
+
+        Parameters
+        ----------
+        prefix : str
+            The prefix of the SIunit: ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+            
+        unit : str
+            The volume unit identifier: ``litres``.
+
+        Returns
+        -------
+
+        """         
         self._call('LCP_SetVolumeUnit', self._handle[0],
                                     getattr(self._dll, prefix.upper()),
                                     getattr(self._dll, unit.upper()))
         
     def set_flow_unit(self, prefix=None, volume_unit=None, time_unit=None):
-#        self._dll.LCP_SetFlowUnit(self._handle[0],
-#                                  getattr(self._dll, prefix.upper()),
-#                                  getattr(self._dll, volume_unit.upper()),
-#                                  getattr(self._dll, time_unit.upper()))
+        """
+        Sets the flow unit for a certain pump.
+        
+        The flow unit defines the unit to be used for all flow values passed to 
+        API functions or retrieved from API functions.
+
+        Parameters
+        ----------
+        prefix : str
+            The prefix of the SIunit: ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+            
+        volume_unit : str
+            The volume unit identifier: ``litres``.
+            
+        time_unit : str
+            The time unit (denominator) of the velocity unit: ``per_hour``, ``per_minute``,
+            ``per_second``.
+
+        Returns
+        -------
+
+        """         
         self._call('LCP_SetFlowUnit', self._handle[0],
                                   getattr(self._dll, prefix.upper()),
                                   getattr(self._dll, volume_unit.upper()),
@@ -256,22 +441,68 @@ class QmixPump(object):
     
     # TODO: find reasonable default parameters
     def set_syringe_param(self, inner_diameter_mm=23, max_piston_stroke_mm=60):
-#        self._dll.LCP_SetSyringeParam(self._handle[0], inner_diameter_mm,
-#                                      max_piston_stroke_mm)
+        """
+        Set syringe parameters.
+        
+        If you change the syringe in one device, you need to setup the new syringe 
+        parameters to get proper conversion of flow rate und volume units.
+
+        Parameters
+        ----------
+        inner_diameter_mm : float
+            Inner diameter of the syringe tube in millimetres.
+            
+        max_piston_stroke_mm : float
+            The maximum piston stroke defines the maximum position the piston can 
+            be moved to before it slips out of the syringe tube. The maximum piston
+            stroke limits the maximum travel range of the syringe pump pusher.
+            
+        Returns
+        -------
+
+        """        
         self._call('LCP_SetSyringeParam', self._handle[0], inner_diameter_mm,
                                       max_piston_stroke_mm)
     @property    
-    def max_flow_rate(self):       
-#        self._dll.LCP_GetFlowRateMax(self._handle[0], self._flow_rate_max)
-#        return self._flow_rate_max[0]
+    def max_flow_rate(self):
+        """
+        Get maximum flow rate that is realizable with current dosing unit configuration.
+        
+        The maximum flow rate depends on the mechanical configuration of the dosing 
+        unit (gear) and on the syringe configuration. If larger syringes are used 
+        then larger flow rates are realizable.
+        
+        Returns
+        -------
+        float                                
+            The maximum flow rate in configured SI unit
+
+        """         
         self._call('LCP_GetFlowRateMax', self._handle[0], self._flow_rate_max)
         return self._flow_rate_max[0]
-    
-    # TODO: First call after physical start is bugged (behaves like a calibration)       
+         
     def aspirate(self, volume, flow_rate, blocking_wait=False):
+        """
+        Aspirate a certain volume with a certain flow rate.
+        
+        It also switches the valve in position 1 (green led activated).
+
+        Parameters
+        ----------
+        volume : float
+            The volume to aspirate in physical units.
+            
+        flow_rate : float
+            The flow rate to use to aspirate the volume, negative flow rates are invalid.
+            
+        blocking_wait : bool
+            Whether to block until done.        
+            
+        Returns
+        -------
+
+        """          
         self.valve.switch_position(1)
-        # time.sleep(1)
-#        self._dll.LCP_Aspirate(self._handle[0], volume, flow_rate) 
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)       
         if blocking_wait:
             while self.is_pumping:
@@ -280,8 +511,30 @@ class QmixPump(object):
                 
     def dispense(self, volume, flow_rate, blocking_wait=False, 
                              switch_valve_when_finished=False):
+        """
+        Dispense a certain volume with a certain flow rate.
+        
+        It also switches the valve in position 0 (green led off).
+
+        Parameters
+        ----------
+        volume : float
+            The volume to dispense in physical units.
+            
+        flow_rate : float
+            The flow rate to use to dispense the volume, negative flow rates are invalid.
+            
+        blocking_wait : bool
+            Whether to block until done.
+            
+        switch_valve_when_finished : bool
+            If set to ``True``, it switches valve to postion 1 when dispense is finished.
+            
+        Returns
+        -------
+
+        """         
         self.valve.switch_position(0)
-#        self._dll.LCP_Dispense(self._handle[0], volume, flow_rate)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)        
         if blocking_wait:
             while self.is_pumping:
@@ -293,67 +546,179 @@ class QmixPump(object):
 #        self._dll.LCP_PumpVolume(self._handle[0], volume, flow_rate)
         
     def set_fill_level(self, level, flow_rate, blocking_wait=False):
+        """
+        Pumps fluid with the given flow rate until the requested fill level is reached.
+        
+        Depending on the requested fill level given in ``level`` parameter this function
+        may cause aspiration or dispension of fluid. If it aspirates it switches the
+        valve in position 1. 0 if it dispenses.
+
+        Parameters
+        ----------
+        level : float
+            The requested fill level. A level of 0 indicates a completely empty syringe.
+            
+        flow_rate : float
+            The flow rate to use for pumping.
+            
+        blocking_wait : bool
+            Whether to block until done.
+                        
+        Returns
+        -------
+
+        """        
         if level < self.get_fill_level():
             self.valve.switch_position(0)
         else:
-            self.valve.switch_position(1)        
-#        self._dll.LCP_SetFillLevel(self._handle[0], level, flow_rate) 
+            self.valve.switch_position(1)         
         self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)      
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
         
     def generate_flow(self, flow_rate, blocking_wait=False):
+        """
+        Generate a continuous flow.
+
+        If it aspirates it switches the valve in position 1. 0 if it dispenses.
+
+        Parameters
+        ----------            
+        flow_rate : float
+            A positive flow rate indicates dispensing and a negative flow rate indicates aspiration.
+            
+        blocking_wait : bool
+            Whether to block until done.
+                        
+        Returns
+        -------
+
+        """        
         if flow_rate > 0:
             self.valve.switch_position(0)
         else:
             self.valve.switch_position(1)            
-#        self._dll.LCP_GenerateFlow(self._handle[0], flow_rate)
         self._call('LCP_GenerateFlow', self._handle[0], flow_rate)
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
         
     def stop(self):
-#        self._dll.LCP_StopPumping(self._handle[0])
+        """
+        Immediately stop pumping.
+
+        Parameters
+        ----------            
+                        
+        Returns
+        -------
+
+        """          
         self._call('LCP_StopPumping', self._handle[0])
-        
+    
+    #TODO: modify?    
     def stop_all_pumps(self): # should be callable without a pump object
-#        self._dll.LCP_StopAllPumps() #TO FIX
+        """
+        Immediately stop pumping.
+
+        Parameters
+        ----------            
+                        
+        Returns
+        -------
+
+        """     
         self._call('LCP_StopAllPumps')
     
     @property    
     def dosed_volume(self):
-#        self._dll.LCP_GetDosedVolume(self._handle[0], self._p_dosed_volume)
+        """
+        Get the already dosed volume.        
+        
+        Returns
+        -------
+        float                                
+            The already dosed volume
+
+        """          
         self._call('LCP_GetDosedVolume', self._handle[0], self._p_dosed_volume)
         return self._p_dosed_volume[0]
     
     def get_fill_level(self):
-#        self._dll.LCP_GetFillLevel(self._handle[0], self._p_fill_level)
+        """
+        Returns the current fill level of the pump.
+
+        Parameters
+        ----------            
+                        
+        Returns
+        -------
+        float
+            The current fill level of the syringe
+
+        """        
         self._call('LCP_GetFillLevel', self._handle[0], self._p_fill_level)
         return self._p_fill_level[0]
 
     @property
     def current_flow_rate(self):
-#        self._dll.LCP_GetFlowIs(self._handle[0], self._p_flow_rate)
+        """
+        Read the current flow rate.
+        
+        This does not read the real flow rate instead this function returns simply
+        the cached flow rate demand value.
+        
+        Returns
+        -------
+        float                                
+            The current flow rate demand value
+
+        """         
         self._call('LCP_GetFlowIs', self._handle[0], self._p_flow_rate)
         return self._p_flow_rate[0]
     
     @property
     def is_pumping(self):
-#        r = self._dll.LCP_IsPumping(self._handle[0])
+        """
+        Check if device is currently stopped or dosing.
+        
+        Returns
+        -------
+        int                                
+            1	- Device is pumping
+            0	- Device is stopped
+
+        """         
         r = self._call('LCP_IsPumping', self._handle[0]) 
         return bool(r)
     
     @property
-    def has_valve(self): #NOT WORKING; returns always 1
-#        r = self._dll.LCP_HasValve(self._handle[0])
+    def has_valve(self):
+        """
+        Returns 1 if this pump has an valve assigned.
+        
+        Returns
+        -------
+        int                                
+            0	- No valve assigned to this pump
+            1	- Valve assigned to this pump
+
+        """        
         r = self._call('LCP_HasValve', self._handle[0])
         return bool(r)
     
     @property
     def valve_handle(self):
-#        self._dll.LCP_GetValveHandle(self._handle[0], self._valve_handle)
+        """
+        Returns the valve handle of the pump valve.
+        
+        Returns
+        -------
+        int                                
+           Handle to valve device or 0 if no valve is associated 
+
+        """          
         self._call('LCP_GetValveHandle', self._handle[0], self._valve_handle)
         return self._valve_handle[0]
 
@@ -373,6 +738,23 @@ VALVE_HEADER =  """
  """
 
 class QmixValve(object):
+    """
+    Istantiate a valve object.
+
+    Parameters
+    ----------
+    dll_dir : str
+        Absolute path to the folder that contains Qmix .dll files.
+        
+    index : int
+        Index of the valve to istantiate. If a ``handle`` is passed this parameter
+        it is not used.
+        
+    handle :  dev_hdl
+        Used when initializing a ``QmixPump`` object. It is not used if a ``index`` 
+        parameter is passed.
+        
+    """    
     def __init__(self, dll_dir=None, index=0, handle=None):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
@@ -390,7 +772,6 @@ class QmixValve(object):
         if handle is None:
             self.index = index
             self._handle = self._ffi.new('dev_hdl *', 0)
-#            self._dll.LCV_GetValveHandle(self.index, self._handle)
             self._call('LCV_GetValveHandle', self.index, self._handle)
         else:
             self.index = None
@@ -404,16 +785,50 @@ class QmixValve(object):
 
     @property
     def number_of_positions(self):
-#        return self._dll.LCV_NumberOfValvePositions(self._handle[0])
+        """
+        Returns the number of valve positions.
+        
+        Each valve has a number of available valve positions. 
+        A switching valve has two positions.
+        
+        Returns
+        -------
+        int                                
+           >0	Number of valve positions 
+
+        """        
         return self._call('LCV_NumberOfValvePositions', self._handle[0])
     
     @property
     def current_position(self):
-        # return self._dll.LCV_ActualValvePosition(self._handle[0])
+        """
+        Returns the current logical valve position.
+        
+        Each valve position is identified by a logical valve position identifier 
+        from 0 to number of valve positions - 1. This function returns the logical valve
+        position identifier for the current valve position.
+        
+        Returns
+        -------
+        int                                
+           >=0 current valve position index. 
+
+        """         
         return self._call('LCV_ActualValvePosition', self._handle[0])
     
     def switch_position(self, position=0):
-#        return self._dll.LCV_SwitchValveToPosition(self._handle[0], position)
+        """
+        Switches the valve to a certain logical valve position.
+
+        Parameters
+        ---------- 
+        position : int
+            Logical valve target position index.
+                        
+        Returns
+        -------
+
+        """        
         self._call('LCV_SwitchValveToPosition', self._handle[0], position)
     
 DIGITAL_IO_HEADER =  """
@@ -431,6 +846,19 @@ DIGITAL_IO_HEADER =  """
  """
 
 class QmixDigitalIO(object):
+    """
+    Istantiate a valve object.
+
+    Parameters
+    ----------
+    dll_dir : str
+        Absolute path to the folder that contains Qmix .dll files.
+        
+    index : int
+        Index of the digital channel to istantiate. It is related with the config files.
+        First channel has ``index = 0``, second has ``index = 1`` and so on.
+                
+    """     
     def __init__(self, dll_dir=None, index=0):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
@@ -448,7 +876,6 @@ class QmixDigitalIO(object):
         
         self._ch_name="QmixIO_B_1_DO"
         self._channel = self._ch_name + str(index) 
-#        self._dll.LCDIO_LookupOutChanByName(bytes(self._channel,'utf8'), self._handle)
         self._call('LCDIO_LookupOutChanByName', bytes(self._channel,'utf8'), self._handle)
 
     def _call(self, func_name, *args):
@@ -459,15 +886,34 @@ class QmixDigitalIO(object):
         
     @property
     def is_output_on(self):
-#        r = self._dll.LCDIO_IsOutputOn(self._handle[0])
+        """
+        Return the state of a digital output channel.
+        
+        Returns
+        -------
+        int                                
+           1	Channel is ON
+           0	Channel is OFF 
+
+        """          
         r = self._call('LCDIO_IsOutputOn', self._handle[0])
         return bool(r)
     
     def write_on(self, state):
-#        self._dll.LCDIO_WriteOn(self._handle[0], state)
+        """
+        Swicth digital output channel on/off.
+
+        Parameters
+        ---------- 
+        state : int
+            State to set 0 = switch off, 1 = switch on.
+                        
+        Returns
+        -------
+
+        """         
         self._call('LCDIO_WriteOn', self._handle[0], state)
  
-#TODO: lines with /* */ are commented becaus they raise an error in the parser      
 ERROR_HEADER = """
     #define USL_DECL ... 
     typedef int32_t TErrCode;
@@ -687,7 +1133,7 @@ ERROR_HEADER = """
     #define ERR_APP                             0x8000  ///< application specific errors start here
 """
 
-class QmixError(object):
+class _QmixError(object):
     def __init__(self, error_number, dll_dir=None):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
@@ -706,7 +1152,6 @@ class QmixError(object):
     
     @property
     def error_code(self):
-#        self._error_code = self._dll.errnoToErrCode(self.error_number)
         self._error_code = hex(abs(self.error_number))
         return self._error_code
     
@@ -720,7 +1165,7 @@ class QmixError(object):
 
             
     
-#%%
+#%% INITIALIZATION
 if __name__ == '__main__':
     a = QmixBus()
     a.open()
@@ -735,8 +1180,7 @@ if __name__ == '__main__':
     c.enable()
     d.enable()
     e.enable()
-    
-    
+       
     b.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
     c.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
     d.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
@@ -768,17 +1212,18 @@ if __name__ == '__main__':
     #TEST3.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
     
     #%% TEST2
-#    b.valve.current_position
-#    c.valve.switch_position(position=1)
-#    c._dll.LCP_Aspirate(c._handle[0], 10, 2)
-#    d._dll.LCP_SyringePumpCalibrate(d._handle[0])
-#    c.aspirate(4,2)
+    b.valve.current_position
+    c.valve.switch_position(position=1)
+    c._dll.LCP_Aspirate(c._handle[0], 10, 2)
+    d._dll.LCP_SyringePumpCalibrate(d._handle[0])
+    c.aspirate(4,2)
 
     #%% CALIBRATE
     b.calibrate(blocking_wait=False)
     c.calibrate(blocking_wait=False)
     d.calibrate(blocking_wait=False)
     e.calibrate(blocking_wait=False)    
+    
     #%% TEST 3
     time.sleep(3)
     ch0.write_on(1)
