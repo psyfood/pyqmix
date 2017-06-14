@@ -5,6 +5,10 @@ Created on Thu May 18 10:58:59 2017
 @author: alfine-l
 
 """
+import sys
+if sys.version_info[0] < 3:
+    from builtins import bytes
+
 import os
 from cffi import FFI
 import time
@@ -42,8 +46,10 @@ def CHK(return_code, funcname, *args):
     else:  
         e = _QmixError(return_code)
         error_string = e.error_string
-        msg = f'{error_string}, Error number: {e.error_number}, Error code {e.error_code}'
+#        msg = f'{error_string}, Error number: {e.error_number}, Error code {e.error_code}'
+        msg = error_string + ", Error number: " + str(e.error_number) + ", Error code: " + str(e.error_code) 
         raise RuntimeError(msg)
+        
 
 BUS_HEADER =  """
     typedef long long labb_hdl;    
