@@ -240,7 +240,7 @@ class QmixPump(object):
         First pump has ``index = 0``, second has ``index = 1`` and so on.
         
     """
-    def __init__(self, dll_dir=None, index=0):
+    def __init__(self, dll_dir=None, index=0, name='', external_valves=None):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
         else:
@@ -271,6 +271,13 @@ class QmixPump(object):
             self.clear_fault_state()
         if not self.is_enabled:
             self.enable()
+        
+        if external_valves is None:
+            self.ext_valves = dict()
+        else:
+            self.ext_valves = external_valves
+            
+        self.name = name
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
@@ -508,7 +515,8 @@ class QmixPump(object):
         -------
 
         """          
-        self.valve.switch_position(1)
+        # self.valve.switch_position(1)
+        self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)       
         if blocking_wait:
             while self.is_pumping:
@@ -540,13 +548,14 @@ class QmixPump(object):
         -------
 
         """         
-        self.valve.switch_position(0)
+        self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)        
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
+
             if switch_valve_when_finished:
-                self.valve.switch_position(1)
+                self.valve.switch_position(self.valve.aspirate_pos)
        
 #    def pump_volume(self, volume, flow_rate): # NOT WORKING WITH NEGATIVE VALUES, TO FIX
 #        self._dll.LCP_PumpVolume(self._handle[0], volume, flow_rate)
@@ -575,9 +584,9 @@ class QmixPump(object):
 
         """        
         if level < self.get_fill_level():
-            self.valve.switch_position(0)
+            self.valve.switch_position(self.valve.dispense_pos)
         else:
-            self.valve.switch_position(1)         
+            self.valve.switch_position(self.valve.aspirate_pos)         
         self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)      
         if blocking_wait:
             while self.is_pumping:
@@ -602,9 +611,9 @@ class QmixPump(object):
 
         """        
         if flow_rate > 0:
-            self.valve.switch_position(0)
+            self.valve.switch_position(self.valve.dispense_pos)
         else:
-            self.valve.switch_position(1)            
+            self.valve.switch_position(self.valve.aspirate_pos)            
         self._call('LCP_GenerateFlow', self._handle[0], flow_rate)
         if blocking_wait:
             while self.is_pumping:
@@ -727,7 +736,12 @@ class QmixPump(object):
         """          
         self._call('LCP_GetValveHandle', self._handle[0], self._valve_handle)
         return self._valve_handle[0]
-
+    
+    def add_external_valve(self, valve, name):
+        self.ext_valves[name] = valve
+        
+    def remove_external_valve(self, name):
+        del self.ext_valves[name]
 
 VALVE_HEADER =  """
     typedef long long dev_hdl;
@@ -761,7 +775,7 @@ class QmixValve(object):
         parameter is passed.
         
     """    
-    def __init__(self, dll_dir=None, index=0, handle=None):
+    def __init__(self, dll_dir=None, index=0, handle=None, name=''):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
         else:
@@ -782,6 +796,11 @@ class QmixValve(object):
         else:
             self.index = None
             self._handle = handle
+            
+        self.aspirate_pos = 0
+        self.dispense_pos = 1
+        
+        self.name = name
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
@@ -836,6 +855,34 @@ class QmixValve(object):
 
         """        
         self._call('LCV_SwitchValveToPosition', self._handle[0], position)
+        
+
+class QmixExternalValve(QmixValve):
+    def __init__(self, index=0, name=''):
+        self.index = index
+        self._dio = QmixDigitalIO(index=self.index)
+        
+        self.aspirate_pos = 0
+        self.dispense_pos = 1
+        
+        self.name = name
+        
+    def switch_position(self, position=0):
+        self._dio.write_on(position)
+        
+    @property
+    def current_position(self):        
+        r = self._dio.is_output_on
+        if r:
+            r = 1
+        else:
+            r = 0
+        return r
+        
+    @property
+    def number_of_positions(self):
+        return 2
+
     
 DIGITAL_IO_HEADER =  """
     typedef long long dev_hdl;
@@ -865,7 +912,7 @@ class QmixDigitalIO(object):
         First channel has ``index = 0``, second has ``index = 1`` and so on.
                 
     """     
-    def __init__(self, dll_dir=None, index=0):
+    def __init__(self, dll_dir=None, index=0, name=''):
         if dll_dir is None:
             self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
         else:
@@ -883,6 +930,8 @@ class QmixDigitalIO(object):
         self._ch_name="QmixIO_B_1_DO"
         self._channel = self._ch_name + str(index) 
         self._call('LCDIO_LookupOutChanByName', bytes(self._channel,'utf8'), self._handle)
+        
+        self.name = name
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
