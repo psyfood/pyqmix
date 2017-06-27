@@ -10,6 +10,7 @@ import numpy as np
 import os
 from psychopy import core, data, event, gui, visual 
 from qmix import QmixBus, QmixPump, _QmixError, QmixDigitalIO
+import pandas as pd
 
 #%% PUMPS INITIALIZATION
 qmix_bus = QmixBus()
@@ -56,7 +57,7 @@ height = GetSystemMetrics(1)
 tastants_pumps = {'oil':pump_6, 'texture':pump_5, 'water':pump_4}
 
 #%% FUNCTIONS
-def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, MORE_TO_ADD=None):
+def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, out_dir=None):
     win = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop')
     trials = data.TrialHandler(conditions, nReps=nReps, extraInfo=extraInfo)
     fixation = visual.TextStim(win, text='+')
@@ -65,28 +66,30 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, M
         win.color = [0, 0, 0]
         win.flip()
         win.flip()
+        
+        #draw fixation cross for a random time between 1.5-2s
         fixation.draw()
         fixation_duration = np.random.randint(1.5,2) 
         win.flip()
         core.wait(fixation_duration,fixation_duration)
         
+        #associate the trial's condition to a syringe pump
+        # and dispense the requested amount of volume
         pump = tastants_pumps[str(trial['taste'])]
         print(str(trial['taste']))
         flow_rate = float(trial['flow_rate'])
         volume = float((trial['volume']))
         
         pump.dispense(volume, flow_rate)
-        core.wait(1.5,1.5)
+        core.wait(1.5,1.5) #taste release time
+        core.wait(2.5) #additional time to avoid visual stimuli
         
         #blank screen
-        win.color = [1, 1, 1]
         win.flip()
-        win.flip()
-        core.wait(0.5,0.5)
+        core.wait(0.5,.5)
         
-        win.color = [0, 0, 0]
-        win.flip()
-        win.flip()
+        #RATING SCALE:
+        # evaluate intesity
         timer = core.CountdownTimer(3.5)
         ratingScale.setDescription('INTENSITAT') #TODO: Ä not supported
         while ratingScale.noResponse and timer.getTime()>0:
@@ -100,16 +103,13 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, M
         ratingScale.reset()
     
         #blank screen
-        win.color = [1, 1, 1]
-        win.flip()
         win.flip()
         core.wait(0.5,0.5)
         
-        win.color = [0, 0, 0]
-        win.flip()
-        win.flip()
+        #RATING SCALE:
+        # evaluate pleasentness
         timer = core.CountdownTimer(3.5)
-        ratingScale.setDescription('ANGENEHNHEIT')
+        ratingScale.setDescription('ANGENEHMHEIT')
         while ratingScale.noResponse and timer.getTime()>0:
             ratingScale.draw()
             win.flip()
@@ -117,21 +117,29 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, M
         if rating is not None:
             rating = round(rating)
         print(rating)
-        trials.addData('ANGENEHNHEIT', rating)
+        trials.addData('ANGENEHMHEIT', rating)
         ratingScale.reset()
-        win.color = [1, 1, 1]
-        win.flip()
-        win.flip()
-        core.wait(8,8)    
+        
+        #blank screen
+        #end of current trial
+        win.flip()       
+        core.wait(6,6)    
     
     win.close()
-    trials.saveAsExcel(fileName=outfile, sheetName=extraInfo['participant']+'_'+str(block_number), 
-                       appendFile=True, dataOut=('n','all_raw'))
+    #Save the data from the trial to .xlsx file document.
+#    trials.saveAsExcel(fileName=out_dir, sheetName=extraInfo['participant']+'_'+str(block_number), 
+#                       appendFile=True, dataOut=('n','all_raw'))
+    new_out = outfile + '_' + str(block_number) + '.xlsx'
+    trials_data = trials.saveAsWideText(new_out)
+    writer = pd.ExcelWriter(new_out)
+    trials_data.to_excel(writer)
+    writer.save()
 
 global win_instruction
 def start_blocks(n_blocks=0, t_inter_blocks=None,conditions=None, nReps=0,
-                 extraInfo=None, start_from=None, MORE_TO_ADD=None):
+                 extraInfo=None, start_from=None, out_dir=None):
     
+    #Instruction for the participant
     win_instruction = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop')
     instruction1 = visual.TextStim(win_instruction, text='A lot of instruction here, blalbablablabla')
     instruction2 = visual.TextStim(win_instruction, text='MORE INFO, blalbablablabla')
@@ -141,7 +149,7 @@ def start_blocks(n_blocks=0, t_inter_blocks=None,conditions=None, nReps=0,
     instruction2.draw()
     win_instruction.flip()
     core.wait(6.6)
-    win_instruction.close()
+    win_instruction.flip() #for smooth transition win_instruction - win trial/ block-block
 
     if start_from is None:
         start = 1
@@ -150,8 +158,10 @@ def start_blocks(n_blocks=0, t_inter_blocks=None,conditions=None, nReps=0,
     
     for i in range(start, n_blocks+1):
         extraInfo['block'] = i
-        perform_trial(conditions=conditions, nReps=nReps, extraInfo=extraInfo,block_number=i)
+        perform_trial(conditions=conditions, nReps=nReps, extraInfo=extraInfo,block_number=i, out_dir=out_dir)
         core.wait(t_inter_blocks,t_inter_blocks)
+        
+    win_instruction.close()
         
         
 #%% PARTICIPANT INFO
@@ -166,4 +176,4 @@ if not r.OK:
     raise RuntimeError('Info dialog canceled.')
     
 #%% TEST
-start_blocks(n_blocks=4,t_inter_blocks=2,conditions=conditions, nReps=2, extraInfo=exp_info, start_from=3)
+start_blocks(n_blocks=2,t_inter_blocks=2,conditions=conditions, nReps=3, extraInfo=exp_info, out_dir=outfile)
