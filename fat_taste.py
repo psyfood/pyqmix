@@ -12,52 +12,9 @@ from psychopy import core, data, event, gui, visual
 from qmix import QmixBus, QmixPump, _QmixError, QmixDigitalIO
 import pandas as pd
 
-#%% PUMPS INITIALIZATION
-qmix_bus = QmixBus()
-qmix_bus.open()
-qmix_bus.start()
-
-pump_4 = QmixPump(index=3)
-pump_5 = QmixPump(index=4)
-pump_6 = QmixPump(index=5)
-pump_4.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-pump_5.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-pump_6.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-pump_4.set_volume_unit(prefix="milli", unit="litres")
-pump_5.set_volume_unit(prefix="milli", unit="litres")
-pump_6.set_volume_unit(prefix="milli", unit="litres")
-pump_4.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-pump_5.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-pump_6.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-
-#%% CALIBRATION
-pump_4.calibrate(blocking_wait=False)
-pump_5.calibrate(blocking_wait=False)
-pump_6.calibrate(blocking_wait=False)
-
-#%% FILL ALL THE SYRINGES
-pump_4.generate_flow(-4)
-pump_5.generate_flow(-4)
-pump_6.generate_flow(-4)
-    
-#%% PATHS AND DIRECTORIES
-base_dir =  os.path.normpath('L:\PSY-Studenten\Lorenzo\Python Scripts\gustometer')
-conditions_file = os.path.join(base_dir, 'fat_taste.xlsx')
-data_dir = os.path.join(base_dir, 'Data_out_fat')
-outfile = os.path.join(data_dir,'output_fat_taste')
-
-#import .xlsx file
-conditions = data.importConditions(conditions_file)
-
-#screen resolution
-width = GetSystemMetrics(0)
-height = GetSystemMetrics(1)
-
-#assign to each taste a specific pump
-tastants_pumps = {'oil':pump_6, 'texture':pump_5, 'water':pump_4}
-
 #%% FUNCTIONS
-def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, out_dir=None):
+# TODO: make private this function?
+def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=0, out_dir=None, iti=None):
     win = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop')
     trials = data.TrialHandler(conditions, nReps=nReps, extraInfo=extraInfo)
     fixation = visual.TextStim(win, text='+')
@@ -91,7 +48,7 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, o
         #RATING SCALE:
         # evaluate intesity
         timer = core.CountdownTimer(3.5)
-        ratingScale.setDescription('INTENSITAT') #TODO: Ä not supported
+        ratingScale.setDescription(u'INTENSITÄT')
         while ratingScale.noResponse and timer.getTime()>0:
             ratingScale.draw()
             win.flip()
@@ -99,7 +56,7 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, o
         if rating is not None:
             rating = round(rating)
         print(rating)
-        trials.addData('INTENSITAT', rating) #TODO: Ä not supported
+        trials.addData(u'INTENSITÄT', rating)
         ratingScale.reset()
     
         #blank screen
@@ -123,22 +80,59 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=None, o
         #blank screen
         #end of current trial
         win.flip()       
-        core.wait(6,6)    
+        core.wait(iti, iti)    
     
     win.close()
-    #Save the data from the trial to .xlsx file document.
-#    trials.saveAsExcel(fileName=out_dir, sheetName=extraInfo['participant']+'_'+str(block_number), 
-#                       appendFile=True, dataOut=('n','all_raw'))
-    new_out = outfile + '_' + str(block_number) + '.xlsx'
+
+    new_out = outfile + '_' + extraInfo['participant'] + '_' + str(block_number) + '.xlsx'
     trials_data = trials.saveAsWideText(new_out)
     writer = pd.ExcelWriter(new_out)
     trials_data.to_excel(writer)
     writer.save()
 
 global win_instruction
-def start_blocks(n_blocks=0, t_inter_blocks=None,conditions=None, nReps=0,
-                 extraInfo=None, start_from=None, out_dir=None):
+def start_blocks(n_blocks=0, t_inter_blocks=0, conditions=None, nReps=0,
+                 extraInfo=None, start_from=None, out_dir=None, iti=None):
+
+    """
+    This function begins the experiment.
     
+    It is possibile to resume an experiment, starting from a specific block.
+
+    Parameters
+    ----------
+    n_blocks : int
+        Number of blocks that compose the experiment.
+        
+    t_inter_blocks : int
+        Time between one block and the next, in seconds.
+        
+    conditions : str
+        Path to the .xlsx file that contains the experiment's conditions.
+        
+    nReps : int
+        Number of repetitions per condition (within a block)
+        
+    extraInfo : dict
+        Dictionary containing additional info, e.g.:  participant ID, age, 
+        handedness, date and time of the experiment.
+        
+    start_from : int
+        Block number from which to start. Default is None: in this case the 
+        experiment will start from the first block.
+        
+    out_dir: str
+        path to the output file. Chose a file name and the function will create
+        one .xlsx file per block, adding as suffix the number of the participant
+        and the block.
+        
+    iti: int
+        Inter trial interval, time between one trial and the next, in seconds.
+
+    Returns
+    -------
+
+    """      
     #Instruction for the participant
     win_instruction = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop')
     instruction1 = visual.TextStim(win_instruction, text='A lot of instruction here, blalbablablabla')
@@ -158,22 +152,75 @@ def start_blocks(n_blocks=0, t_inter_blocks=None,conditions=None, nReps=0,
     
     for i in range(start, n_blocks+1):
         extraInfo['block'] = i
-        perform_trial(conditions=conditions, nReps=nReps, extraInfo=extraInfo,block_number=i, out_dir=out_dir)
+        perform_trial(conditions=conditions, nReps=nReps, extraInfo=extraInfo, 
+                      block_number=i, out_dir=out_dir, iti=iti)
         core.wait(t_inter_blocks,t_inter_blocks)
         
     win_instruction.close()
-        
-        
-#%% PARTICIPANT INFO
-#Get participant info.
-exp_info = dict(participant='001', age=30, handedness=['right', 'left', 'both'],
-                date=data.getDateStr(format='%Y-%m-%d_%H%M'))
 
-r = gui.DlgFromDict(exp_info,
-                    order=['participant', 'age', 'handedness', 'date'])
-                    
-if not r.OK:
-    raise RuntimeError('Info dialog canceled.')
+#%% PUMPS INITIALIZATION
+if __name__ == '__main__':
     
-#%% TEST
-start_blocks(n_blocks=2,t_inter_blocks=2,conditions=conditions, nReps=3, extraInfo=exp_info, out_dir=outfile)
+    qmix_bus = QmixBus()
+    qmix_bus.open()
+    qmix_bus.start()
+    
+    pump_4 = QmixPump(index=3)
+    pump_5 = QmixPump(index=4)
+    pump_6 = QmixPump(index=5)
+    pump_4.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+    pump_5.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+    pump_6.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+    pump_4.set_volume_unit(prefix="milli", unit="litres")
+    pump_5.set_volume_unit(prefix="milli", unit="litres")
+    pump_6.set_volume_unit(prefix="milli", unit="litres")
+    pump_4.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    pump_5.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    pump_6.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    
+    #%% CALIBRATION
+    pump_4.calibrate(blocking_wait=False)
+    pump_5.calibrate(blocking_wait=False)
+    pump_6.calibrate(blocking_wait=False)
+    
+    #%% STOP PUMPS
+    pump_4.stop_all_pumps()
+    
+    #%% FILL ALL THE SYRINGES
+    pump_4.generate_flow(-4)
+    pump_5.generate_flow(-4)
+    pump_6.generate_flow(-4)
+        
+    #%% PATHS AND DIRECTORIES
+    base_dir =  os.path.normpath('L:\PSY-Studenten\Lorenzo\Python Scripts\gustometer')
+    conditions_file = os.path.join(base_dir, 'fat_taste.xlsx')
+    data_dir = os.path.join(base_dir, 'Data_out_fat')
+    outfile = os.path.join(data_dir,'output_fat_taste')
+    
+    #import .xlsx file
+    conditions = data.importConditions(conditions_file)
+    
+    #screen resolution
+    width = GetSystemMetrics(0)
+    height = GetSystemMetrics(1)
+    
+    #assign to each taste a specific pump
+    tastants_pumps = {'oil':pump_6, 'texture':pump_5, 'water':pump_4}
+            
+    #%% PARTICIPANT INFO
+    #Get participant info.
+    exp_info = dict(participant='001', age=30, handedness=['right', 'left', 'both'],
+                    date=data.getDateStr(format='%Y-%m-%d_%H%M'))
+    
+    r = gui.DlgFromDict(exp_info,
+                        order=['participant', 'age', 'handedness', 'date'])
+                        
+    if not r.OK:
+        raise RuntimeError('Info dialog canceled.')
+        
+    #%% TEST
+    prova = core.Clock()
+    print(prova.getTime())
+    start_blocks(n_blocks=3, t_inter_blocks=3, conditions=conditions, nReps=2,
+                 extraInfo=exp_info, out_dir=outfile, iti=1)
+    print(prova.getTime())
