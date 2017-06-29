@@ -11,11 +11,17 @@ import os
 from psychopy import core, data, event, gui, visual 
 from qmix import QmixBus, QmixPump, _QmixError, QmixDigitalIO
 import pandas as pd
+from pphelper.hardware import Trigger
 
 #%% FUNCTIONS
+trigs = {'oil': 510, 'texture':520, 'water':530, 'fixation':610}
+T = Trigger(use_threads=False, test_mode=True)
+for key in trigs.keys():
+    T.add_trigger(key, trigs[key])
+
 # TODO: make private this function?
 def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=0, out_dir=None, iti=None):
-    win = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop')
+    win = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop') #TODO: modify size, take from system
     trials = data.TrialHandler(conditions, nReps=nReps, extraInfo=extraInfo)
     fixation = visual.TextStim(win, text='+')
     ratingScale = visual.RatingScale(win, precision=10, low=0, high=10, singleClick=True, showAccept=False)
@@ -25,7 +31,9 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=0, out_
         win.flip()
         
         #draw fixation cross for a random time between 1.5-2s
+        T.select_trigger('fixation')
         fixation.draw()
+        T.trigger()
         fixation_duration = np.random.randint(1.5,2) 
         win.flip()
         core.wait(fixation_duration,fixation_duration)
@@ -37,7 +45,9 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=0, out_
         flow_rate = float(trial['flow_rate'])
         volume = float((trial['volume']))
         
+        T.select_trigger(str(trial['taste']))
         pump.dispense(volume, flow_rate)
+        T.trigger()
         core.wait(1.5,1.5) #taste release time
         core.wait(2.5) #additional time to avoid visual stimuli
         
@@ -83,6 +93,8 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=0, out_
         core.wait(iti, iti)    
     
     win.close()
+
+    global trials_data
 
     new_out = outfile + '_' + extraInfo['participant'] + '_' + str(block_number) + '.xlsx'
     trials_data = trials.saveAsWideText(new_out)
@@ -221,6 +233,6 @@ if __name__ == '__main__':
     #%% TEST
     prova = core.Clock()
     print(prova.getTime())
-    start_blocks(n_blocks=3, t_inter_blocks=3, conditions=conditions, nReps=2,
+    start_blocks(n_blocks=3, t_inter_blocks=1, conditions=conditions, nReps=2,
                  extraInfo=exp_info, out_dir=outfile, iti=1)
     print(prova.getTime())
