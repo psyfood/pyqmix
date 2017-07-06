@@ -94,13 +94,12 @@ def perform_trial(conditions=None, nReps=0, extraInfo=None, block_number=0, out_
     
     win.close()
 
-    global trials_data
 
     new_out = outfile + '_' + extraInfo['participant'] + '_' + str(block_number) + '.xlsx'
     trials_data = trials.saveAsWideText(new_out)
-    writer = pd.ExcelWriter(new_out)
-    trials_data.to_excel(writer)
-    writer.save()
+#    writer = pd.ExcelWriter(new_out)
+#    trials_data.to_excel(writer)
+#    writer.save()
 
 global win_instruction
 def start_blocks(n_blocks=0, t_inter_blocks=0, conditions=None, nReps=0,
@@ -170,6 +169,118 @@ def start_blocks(n_blocks=0, t_inter_blocks=0, conditions=None, nReps=0,
         
     win_instruction.close()
 
+#%% REFACTORING
+trigs = {'oil': 510, 'texture':520, 'water':530, 'fixation':610}
+global T
+T = Trigger(use_threads=False, test_mode=True)
+for key in trigs.keys():
+    T.add_trigger(key, trigs[key])
+
+def run_trial(trial, fixation, ratingScale):
+        win.color = [0, 0, 0]
+        win.flip()
+        win.flip()
+        
+        #draw fixation cross for a random time between 1.5-2s
+        T.select_trigger('fixation')
+        fixation.draw()
+        T.trigger()
+        fixation_duration = np.random.randint(1.5,2) 
+        win.flip()
+        core.wait(fixation_duration,fixation_duration)
+        
+        #associate the trial's condition to a syringe pump
+        # and dispense the requested amount of volume
+        pump = tastants_pumps[str(trial['taste'])]
+        print(str(trial['taste']))
+        flow_rate = float(trial['flow_rate'])
+        volume = float((trial['volume']))
+        
+        T.select_trigger(str(trial['taste']))
+        pump.dispense(volume, flow_rate)
+        T.trigger()
+        core.wait(1.5,1.5) #taste release time
+        core.wait(2.5) #additional time to avoid visual stimuli
+        
+        #blank screen
+        win.flip()
+        core.wait(0.5,.5)
+        
+        #RATING SCALE:
+        # evaluate intesity
+        timer = core.CountdownTimer(3.5)
+        ratingScale.setDescription(u'INTENSITÄT')
+        while ratingScale.noResponse and timer.getTime()>0:
+            ratingScale.draw()
+            win.flip()
+        rating_1 = ratingScale.getRating()
+        if rating_1 is not None:
+            rating_1 = round(rating_1)
+        print(rating_1)
+        ratingScale.reset()
+    
+        #blank screen
+        win.flip()
+        core.wait(0.5,0.5)
+        
+        #RATING SCALE:
+        # evaluate pleasentness
+        timer = core.CountdownTimer(3.5)
+        ratingScale.setDescription('ANGENEHMHEIT')
+        while ratingScale.noResponse and timer.getTime()>0:
+            ratingScale.draw()
+            win.flip()
+        rating_2 = ratingScale.getRating()
+        if rating_2 is not None:
+            rating_2 = round(rating_2)
+        print(rating_2)
+        ratingScale.reset()
+        
+        #blank screen
+        #end of current trial
+        win.flip()       
+        return rating_1, rating_2 
+
+def run_block(conditions, nReps, extraInfo, iti, outdir, block_number):
+    trials = data.TrialHandler(conditions, nReps=nReps, extraInfo=extraInfo)
+    fixation = visual.TextStim(win, text='+')
+    ratingScale = visual.RatingScale(win, precision=10, low=0, high=10, singleClick=True, showAccept=False)
+    for trial in trials:
+        rating_1, rating_2 = run_trial(trial, fixation, ratingScale)
+        trials.addData(u'INTENSITÄT', rating_1)
+        trials.addData('ANGENEHMHEIT', rating_2)
+        core.wait(iti,iti)
+    new_out = outdir + '_' + extraInfo['participant'] + '_' + str(block_number)
+    trials.saveAsWideText(new_out, appendFile=False)
+    print(block_number)
+        
+def run_experiment(conditions=None, block_no=1, nReps=1, extraInfo=None, iti=1, 
+                   t_inter_blocks=1, start_from=None, outdir=None):
+    global win
+    win = visual.Window(fullscr=True, size=(1920, 1080), monitor='laptop')
+    instruction1 = visual.TextStim(win, text='A lot of instruction here, blalbablablabla')
+    instruction2 = visual.TextStim(win, text='MORE INFO, blalbablablabla')
+    instruction1.draw()    
+    win.flip()
+    core.wait(6,6)
+    instruction2.draw()
+    win.flip()
+    core.wait(6.6)
+    win.flip()
+    
+    if start_from is None:
+        start = 1
+    else:
+        start = start_from
+    
+    for i in range(start, block_no+1):
+        extraInfo['block'] = i
+        run_block(conditions=conditions, nReps=nReps, extraInfo=extraInfo, 
+                  iti=iti, outdir=outdir, block_number=i)
+        core.wait(t_inter_blocks,t_inter_blocks)
+        
+    win.close()
+
 #%% PUMPS INITIALIZATION
 if __name__ == '__main__':
     
@@ -236,3 +347,9 @@ if __name__ == '__main__':
     start_blocks(n_blocks=3, t_inter_blocks=1, conditions=conditions, nReps=2,
                  extraInfo=exp_info, out_dir=outfile, iti=1)
     print(prova.getTime())
+    
+    #%% TEST REFACTORING
+    run_experiment(conditions=conditions, block_no=3, nReps=2, 
+               extraInfo=exp_info, iti=1, t_inter_blocks=1, outdir=outfile)
+
+
