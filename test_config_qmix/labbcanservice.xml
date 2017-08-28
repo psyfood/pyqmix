@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Plugin>
+    <log4cplus>
+        log4cplus.logger.labbCAN_ServiceLogger=WARN, LogAppender
+    </log4cplus>
+    <PluginLogger>labbCAN_ServiceLogger</PluginLogger>
+</Plugin>

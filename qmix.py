@@ -8,6 +8,9 @@ Created on Thu May 18 10:58:59 2017
 import sys
 if sys.version_info[0] < 3:
     from builtins import bytes
+    # from __builtin__ import bytes
+    pass
+
 
 import os
 from cffi import FFI
@@ -77,7 +80,7 @@ class QmixBus(object):
     """     
     def __init__(self, config_dir=None, dll_dir=None):
         if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
+            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
         else:
             self.dll_dir = dll_dir
             
@@ -85,7 +88,7 @@ class QmixBus(object):
                                  'labbCAN_Bus_API.dll')
 
         if config_dir is None:
-            self.config_dir = os.path.normpath('C:/Users/Public/Documents/QmixElements/Projects/test/Configurations/test_qmix2017')
+            self.config_dir = os.path.normpath('C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\test_qmix2017')
         else:
             self.config_dir = config_dir
         
@@ -242,7 +245,7 @@ class QmixPump(object):
     """
     def __init__(self, dll_dir=None, index=0, name='', external_valves=None):
         if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
+            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
         else:
             self.dll_dir = dll_dir
             
@@ -521,7 +524,6 @@ class QmixPump(object):
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
-
                 
     def dispense(self, volume, flow_rate, blocking_wait=False, 
                              switch_valve_when_finished=False):
@@ -555,11 +557,8 @@ class QmixPump(object):
                 time.sleep(0.0005)
 
             if switch_valve_when_finished:
-                self.valve.switch_position(self.valve.aspirate_pos)
-       
-#    def pump_volume(self, volume, flow_rate): # NOT WORKING WITH NEGATIVE VALUES, TO FIX
-#        self._dll.LCP_PumpVolume(self._handle[0], volume, flow_rate)
-        
+                self.valve.switch_position(self.valve.aspirate_pos)       
+               
     def set_fill_level(self, level, flow_rate, blocking_wait=False):
         """
         Pumps fluid with the given flow rate until the requested fill level is reached.
@@ -777,7 +776,7 @@ class QmixValve(object):
     """    
     def __init__(self, dll_dir=None, index=0, handle=None, name=''):
         if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
+            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
         else:
             self.dll_dir = dll_dir
             
@@ -858,6 +857,13 @@ class QmixValve(object):
         
 
 class QmixExternalValve(QmixValve):
+    """
+    Istantiate an external valve object, controlled by Qmix I/O-B.
+
+    Parameters
+    ----------
+        
+    """    
     def __init__(self, index=0, name=''):
         self.index = index
         self._dio = QmixDigitalIO(index=self.index)
@@ -900,7 +906,7 @@ DIGITAL_IO_HEADER =  """
 
 class QmixDigitalIO(object):
     """
-    Istantiate a valve object.
+    Istantiate an external channel controlled by diglital output signal.
 
     Parameters
     ----------
@@ -914,7 +920,7 @@ class QmixDigitalIO(object):
     """     
     def __init__(self, dll_dir=None, index=0, name=''):
         if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
+            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
         else:
             self.dll_dir = dll_dir
             
@@ -1191,7 +1197,7 @@ ERROR_HEADER = """
 class _QmixError(object):
     def __init__(self, error_number, dll_dir=None):
         if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:/Program Files/qmixsdk')
+            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
         else:
             self.dll_dir = dll_dir
             
@@ -1334,4 +1340,29 @@ if __name__ == '__main__':
     time.sleep(1.5)
     ch0.write_on(0)
     time.sleep(1.5)
-    
+
+##%% test     
+#qmix_bus = QmixBus()
+#qmix_bus.open()
+#qmix_bus.start()
+#
+#pump_3 = QmixPump(index=2)
+#pump_6 = QmixPump(index=5)
+#
+#pump_3.enable()
+#pump_6.enable()
+#   
+#pump_3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+#pump_6.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+#
+#pump_3.set_volume_unit(prefix="milli", unit="litres")
+#pump_6.set_volume_unit(prefix="milli", unit="litres")
+#
+#pump_3.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
+#pump_6.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+#
+##%% CALIBRATION
+#pump_3.calibrate(blocking_wait=False)
+#pump_6.calibrate(blocking_wait=False)
+
+

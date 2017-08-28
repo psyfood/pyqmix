@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Plugin>
+    <labbCAN>
+    </labbCAN>
+    <MaximumPlotInterval_s>60000</MaximumPlotInterval_s>
+    <RefreshPeriod_ms>500</RefreshPeriod_ms>
+    <log4cplus>
+        log4cplus.logger.PIDTuningLogger=WARN, LogAppender
+    </log4cplus>
+	<PluginLogger>PIDTuningLogger</PluginLogger>
+</Plugin>

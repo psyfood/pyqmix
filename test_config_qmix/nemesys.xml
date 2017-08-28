@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Plugin Valid="true">
+	<labbCAN>
+		<DeviceList>
+			<Device Name="neMESYS_Low_Pressure_1_EposDrive">
+				<Type>Nemesys::CNemesysAxis</Type>
+				<Bus>CANopenBus1</Bus>
+				<CANopenDevice NodeId="2">Usl::Epos::CEposDrive</CANopenDevice>
+				<ReadAxisConfigFromDevice>1</ReadAxisConfigFromDevice>
+				<ProductType comment="neMESYS_STD">0</ProductType>
+				<MaxAcceleration>200000</MaxAcceleration>
+				<MinimumAbsoluteVelocity>1</MinimumAbsoluteVelocity>
+				<HomingMethod comment="Positive Limit">18</HomingMethod>
+				<Simulated>0</Simulated>
+				<ObjDictEntries>
+					<ObjDictEntry Index="6086" SubIndex="0" Value="0" Size="2" comment="Motion Profile Type Trapezoidal"/>
+				</ObjDictEntries>
+			</Device>
+			<Device Name="neMESYS_Low_Pressure_1_Valve">
+				<Type>Lcl::CValveWithVoltageDrop</Type>
+				<DigitalOutDevice>neMESYS_Low_Pressure_1_EposDriveDigitalOut</DigitalOutDevice>
+				<VoltageLowerageTime>1000</VoltageLowerageTime>
+				<VoltageDropEnabled>true</VoltageDropEnabled>
+				<PositionBitfields>
+					<Position>0x0</Position>
+					<Position>0x1000</Position>
+				</PositionBitfields>
+				<DigitalOutHighVoltage>13</DigitalOutHighVoltage>
+				<InputPositionIndex>1</InputPositionIndex>
+				<OutputPositionIndex>0</OutputPositionIndex>
+				<SwitchOffPositionIndex>0</SwitchOffPositionIndex>
+			</Device>
+			<Device Name="neMESYS_Low_Pressure_1_Pump">
+				<Type>Lcl::CNemesysEposSyringePump</Type>
+				<DriveDevice>neMESYS_Low_Pressure_1_EposDrive</DriveDevice>
+				<Syringe PistonStroke_mm="60" InnerDiameter_mm="5"/>
+				<Valve>neMESYS_Low_Pressure_1_Valve</Valve>
+				<ProductType comment="neMESYS_STD">0</ProductType>
+			</Device>
+			<Device Name="neMESYS_Low_Pressure_2_EposDrive">
+				<Type>Nemesys::CNemesysAxis</Type>
+				<Bus>CANopenBus1</Bus>
+				<CANopenDevice NodeId="3">Usl::Epos::CEposDrive</CANopenDevice>
+				<ReadAxisConfigFromDevice>1</ReadAxisConfigFromDevice>
+				<ProductType comment="neMESYS_STD">0</ProductType>
+				<MaxAcceleration>200000</MaxAcceleration>
+				<MinimumAbsoluteVelocity>1</MinimumAbsoluteVelocity>
+				<HomingMethod comment="Positive Limit">18</HomingMethod>
+				<Simulated>0</Simulated>
+				<ObjDictEntries>
+					<ObjDictEntry Index="6086" SubIndex="0" Value="0" Size="2" comment="Motion Profile Type Trapezoidal"/>
+				</ObjDictEntries>
+			</Device>
+			<Device Name="neMESYS_Low_Pressure_2_Valve">
+				<Type>Lcl::CValveWithVoltageDrop</Type>
+				<DigitalOutDevice>neMESYS_Low_Pressure_2_EposDriveDigitalOut</DigitalOutDevice>
+				<VoltageLowerageTime>1000</VoltageLowerageTime>
+				<VoltageDropEnabled>true</VoltageDropEnabled>
+				<PositionBitfields>
+					<Position>0x0</Position>
+					<Position>0x1000</Position>
+				</PositionBitfields>
+				<DigitalOutHighVoltage>13</DigitalOutHighVoltage>
+				<InputPositionIndex>1</InputPositionIndex>
+				<OutputPositionIndex>0</OutputPositionIndex>
+				<SwitchOffPositionIndex>0</SwitchOffPositionIndex>
+			</Device>
+			<Device Name="neMESYS_Low_Pressure_2_Pump">
+				<Type>Lcl::CNemesysEposSyringePump</Type>
+				<DriveDevice>neMESYS_Low_Pressure_2_EposDrive</DriveDevice>
+				<Syringe PistonStroke_mm="60" InnerDiameter_mm="5"/>
+				<Valve>neMESYS_Low_Pressure_2_Valve</Valve>
+				<ProductType comment="neMESYS_STD">0</ProductType>
+			</Device>
+		</DeviceList>
+		<ChannelList>
+			<Channel Name="neMESYS_Low_Pressure_1_DigOUTA">
+				<Type>Lcl::CDigitalOutChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveDigitalOut</Device>
+				<ChannelNo>15</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_DigOUTC">
+				<Type>Lcl::CDigitalOutChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveDigitalOut</Device>
+				<ChannelNo>13</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_DigOUTD">
+				<Type>Lcl::CDigitalOutChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveDigitalOut</Device>
+				<ChannelNo>12</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_DigINA">
+				<Type>Lcl::CDigitalInChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveDigitalIn</Device>
+				<ChannelNo>15</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_DigINB">
+				<Type>Lcl::CDigitalInChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveDigitalIn</Device>
+				<ChannelNo>14</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_DigINC">
+				<Type>Lcl::CDigitalInChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveDigitalIn</Device>
+				<ChannelNo>13</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_AnIN1">
+				<Type>Lcl::CAnalogInChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveAnalogIn</Device>
+				<ChannelNo>0</ChannelNo>
+				<Scaling x1="0" y1="0" x2="5000" y2="5000"/>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_1_AnIN2">
+				<Type>Lcl::CAnalogInChannel</Type>
+				<Device>neMESYS_Low_Pressure_1_EposDriveAnalogIn</Device>
+				<ChannelNo>1</ChannelNo>
+				<Scaling x1="0" y1="0" x2="5000" y2="5000"/>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_DigOUTA">
+				<Type>Lcl::CDigitalOutChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveDigitalOut</Device>
+				<ChannelNo>15</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_DigOUTC">
+				<Type>Lcl::CDigitalOutChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveDigitalOut</Device>
+				<ChannelNo>13</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_DigOUTD">
+				<Type>Lcl::CDigitalOutChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveDigitalOut</Device>
+				<ChannelNo>12</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_DigINA">
+				<Type>Lcl::CDigitalInChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveDigitalIn</Device>
+				<ChannelNo>15</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_DigINB">
+				<Type>Lcl::CDigitalInChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveDigitalIn</Device>
+				<ChannelNo>14</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_DigINC">
+				<Type>Lcl::CDigitalInChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveDigitalIn</Device>
+				<ChannelNo>13</ChannelNo>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_AnIN1">
+				<Type>Lcl::CAnalogInChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveAnalogIn</Device>
+				<ChannelNo>0</ChannelNo>
+				<Scaling x1="0" y1="0" x2="5000" y2="5000"/>
+			</Channel>
+			<Channel Name="neMESYS_Low_Pressure_2_AnIN2">
+				<Type>Lcl::CAnalogInChannel</Type>
+				<Device>neMESYS_Low_Pressure_2_EposDriveAnalogIn</Device>
+				<ChannelNo>1</ChannelNo>
+				<Scaling x1="0" y1="0" x2="5000" y2="5000"/>
+			</Channel>
+		</ChannelList>
+	</labbCAN>
+	<DosingModuleList>
+		<DosingModule Name="neMESYS_Low_Pressure_1">
+			<Type>Nemesys::CNemesysSyringePump</Type>
+			<Caption>neMESYS Low Pressure 1</Caption>
+			<LabbCANPump>neMESYS_Low_Pressure_1_Pump</LabbCANPump>
+			<Syringe ScaleVolume_ml="1.0" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="37" Caption="1.0ml Glass"/>
+			<Valve>
+				<labbCANDevice>neMESYS_Low_Pressure_1_Valve</labbCANDevice>
+				<PositionIcon>3x2Way_Asco</PositionIcon>
+			</Valve>
+		</DosingModule>
+		<DosingModule Name="neMESYS_Low_Pressure_2">
+			<Type>Nemesys::CNemesysSyringePump</Type>
+			<Caption>neMESYS Low Pressure 2</Caption>
+			<LabbCANPump>neMESYS_Low_Pressure_2_Pump</LabbCANPump>
+			<Syringe ScaleVolume_ml="1.0" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="37" Caption="1.0ml Glass"/>
+			<Valve>
+				<labbCANDevice>neMESYS_Low_Pressure_2_Valve</labbCANDevice>
+				<PositionIcon>3x2Way_Asco</PositionIcon>
+			</Valve>
+		</DosingModule>
+	</DosingModuleList>
+	<IoDeviceList>
+		<Device Name="neMESYS_Low_Pressure_1_AnIN1">
+			<Caption>neMESYS Low Pressure 1 AnalogIN 1</Caption>
+			<Type>QtLabb::CAnalogInChannelDevice</Type>
+			<AnalogInChannel>neMESYS_Low_Pressure_1_AnIN1</AnalogInChannel>
+			<MinValue>0</MinValue>
+			<MaxValue>5000</MaxValue>
+			<Unit>mV</Unit>
+			<Symbol>U</Symbol>
+			<Color>FF00FF00</Color>
+			<Decimals>0</Decimals>
+			<UserScaling>
+				<DeviceUnit>mV</DeviceUnit>
+				<Scaling Factor="1" Offset="0"/>
+			</UserScaling>
+			<Presets Default="0..5000mV">
+				<Preset>0..6bar (500..4500mV)</Preset>
+				<Preset>0..250bar (500..4500mV)</Preset>
+				<Preset>-1..5bar (0..5000mV)</Preset>
+				<Preset>0..6bar (0..5000mV)</Preset>
+				<Preset>0..40bar (0..5000mV)</Preset>
+				<Preset>0..60bar (0..5000mV)</Preset>
+				<Preset>0..100bar (0..5000mV)</Preset>
+				<Preset>0..250bar (0..5000mV)</Preset>
+				<Preset>0..600bar (0..5000mV)</Preset>
+				<Preset>0..1000bar (0..5000mV)</Preset>
+			</Presets>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_AnIN2">
+			<Caption>neMESYS Low Pressure 1 AnalogIN 2</Caption>
+			<Type>QtLabb::CAnalogInChannelDevice</Type>
+			<AnalogInChannel>neMESYS_Low_Pressure_1_AnIN2</AnalogInChannel>
+			<MinValue>0</MinValue>
+			<MaxValue>5000</MaxValue>
+			<Unit>mV</Unit>
+			<Symbol>U</Symbol>
+			<Color>FF00FF00</Color>
+			<Decimals>0</Decimals>
+			<UserScaling>
+				<DeviceUnit>mV</DeviceUnit>
+				<Scaling Factor="1" Offset="0"/>
+			</UserScaling>
+			<Presets Default="0..5000mV">
+				<Preset>0..6bar (500..4500mV)</Preset>
+				<Preset>0..250bar (500..4500mV)</Preset>
+				<Preset>-1..5bar (0..5000mV)</Preset>
+				<Preset>0..6bar (0..5000mV)</Preset>
+				<Preset>0..40bar (0..5000mV)</Preset>
+				<Preset>0..60bar (0..5000mV)</Preset>
+				<Preset>0..100bar (0..5000mV)</Preset>
+				<Preset>0..250bar (0..5000mV)</Preset>
+				<Preset>0..600bar (0..5000mV)</Preset>
+				<Preset>0..1000bar (0..5000mV)</Preset>
+			</Presets>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_DigOUT1">
+			<Caption>neMESYS Low Pressure 1 DigOUT 1</Caption>
+			<Type>QtLabb::CDigitalOutChannelDevice</Type>
+			<DigOutChannel>neMESYS_Low_Pressure_1_DigOUTC</DigOutChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_DigOUT2">
+			<Caption>neMESYS Low Pressure 1 DigOUT 2</Caption>
+			<Type>QtLabb::CDigitalOutChannelDevice</Type>
+			<DigOutChannel>neMESYS_Low_Pressure_1_DigOUTD</DigOutChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_DigOUT3">
+			<Caption>neMESYS Low Pressure 1 DigOUT 3</Caption>
+			<Type>QtLabb::CDigitalOutChannelDevice</Type>
+			<DigOutChannel>neMESYS_Low_Pressure_1_DigOUTA</DigOutChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_DigIN1">
+			<Caption>neMESYS Low Pressure 1 DigIN 1</Caption>
+			<Type>QtLabb::CDigitalInChannelDevice</Type>
+			<DigInChannel>neMESYS_Low_Pressure_1_DigINA</DigInChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_DigIN2">
+			<Caption>neMESYS Low Pressure 1 DigIN 2</Caption>
+			<Type>QtLabb::CDigitalInChannelDevice</Type>
+			<DigInChannel>neMESYS_Low_Pressure_1_DigINB</DigInChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_1_DigIN3">
+			<Caption>neMESYS Low Pressure 1 DigIN 3</Caption>
+			<Type>QtLabb::CDigitalInChannelDevice</Type>
+			<DigInChannel>neMESYS_Low_Pressure_1_DigINC</DigInChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_AnIN1">
+			<Caption>neMESYS Low Pressure 2 AnalogIN 1</Caption>
+			<Type>QtLabb::CAnalogInChannelDevice</Type>
+			<AnalogInChannel>neMESYS_Low_Pressure_2_AnIN1</AnalogInChannel>
+			<MinValue>0</MinValue>
+			<MaxValue>5000</MaxValue>
+			<Unit>mV</Unit>
+			<Symbol>U</Symbol>
+			<Color>FF00FF00</Color>
+			<Decimals>0</Decimals>
+			<UserScaling>
+				<DeviceUnit>mV</DeviceUnit>
+				<Scaling Factor="1" Offset="0"/>
+			</UserScaling>
+			<Presets Default="0..5000mV">
+				<Preset>0..6bar (500..4500mV)</Preset>
+				<Preset>0..250bar (500..4500mV)</Preset>
+				<Preset>-1..5bar (0..5000mV)</Preset>
+				<Preset>0..6bar (0..5000mV)</Preset>
+				<Preset>0..40bar (0..5000mV)</Preset>
+				<Preset>0..60bar (0..5000mV)</Preset>
+				<Preset>0..100bar (0..5000mV)</Preset>
+				<Preset>0..250bar (0..5000mV)</Preset>
+				<Preset>0..600bar (0..5000mV)</Preset>
+				<Preset>0..1000bar (0..5000mV)</Preset>
+			</Presets>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_AnIN2">
+			<Caption>neMESYS Low Pressure 2 AnalogIN 2</Caption>
+			<Type>QtLabb::CAnalogInChannelDevice</Type>
+			<AnalogInChannel>neMESYS_Low_Pressure_2_AnIN2</AnalogInChannel>
+			<MinValue>0</MinValue>
+			<MaxValue>5000</MaxValue>
+			<Unit>mV</Unit>
+			<Symbol>U</Symbol>
+			<Color>FF00FF00</Color>
+			<Decimals>0</Decimals>
+			<UserScaling>
+				<DeviceUnit>mV</DeviceUnit>
+				<Scaling Factor="1" Offset="0"/>
+			</UserScaling>
+			<Presets Default="0..5000mV">
+				<Preset>0..6bar (500..4500mV)</Preset>
+				<Preset>0..250bar (500..4500mV)</Preset>
+				<Preset>-1..5bar (0..5000mV)</Preset>
+				<Preset>0..6bar (0..5000mV)</Preset>
+				<Preset>0..40bar (0..5000mV)</Preset>
+				<Preset>0..60bar (0..5000mV)</Preset>
+				<Preset>0..100bar (0..5000mV)</Preset>
+				<Preset>0..250bar (0..5000mV)</Preset>
+				<Preset>0..600bar (0..5000mV)</Preset>
+				<Preset>0..1000bar (0..5000mV)</Preset>
+			</Presets>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_DigOUT1">
+			<Caption>neMESYS Low Pressure 2 DigOUT 1</Caption>
+			<Type>QtLabb::CDigitalOutChannelDevice</Type>
+			<DigOutChannel>neMESYS_Low_Pressure_2_DigOUTC</DigOutChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_DigOUT2">
+			<Caption>neMESYS Low Pressure 2 DigOUT 2</Caption>
+			<Type>QtLabb::CDigitalOutChannelDevice</Type>
+			<DigOutChannel>neMESYS_Low_Pressure_2_DigOUTD</DigOutChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_DigOUT3">
+			<Caption>neMESYS Low Pressure 2 DigOUT 3</Caption>
+			<Type>QtLabb::CDigitalOutChannelDevice</Type>
+			<DigOutChannel>neMESYS_Low_Pressure_2_DigOUTA</DigOutChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_DigIN1">
+			<Caption>neMESYS Low Pressure 2 DigIN 1</Caption>
+			<Type>QtLabb::CDigitalInChannelDevice</Type>
+			<DigInChannel>neMESYS_Low_Pressure_2_DigINA</DigInChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_DigIN2">
+			<Caption>neMESYS Low Pressure 2 DigIN 2</Caption>
+			<Type>QtLabb::CDigitalInChannelDevice</Type>
+			<DigInChannel>neMESYS_Low_Pressure_2_DigINB</DigInChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+		<Device Name="neMESYS_Low_Pressure_2_DigIN3">
+			<Caption>neMESYS Low Pressure 2 DigIN 3</Caption>
+			<Type>QtLabb::CDigitalInChannelDevice</Type>
+			<DigInChannel>neMESYS_Low_Pressure_2_DigINC</DigInChannel>
+			<Color>FF00FF00</Color>
+		</Device>
+	</IoDeviceList>
+	<log4cplus>&#10;            log4cplus.logger.NemesysLogger=WARN, LogAppender;&#10;            log4cplus.logger.ContiFlowLogger=WARN, LogAppender;&#10;            log4cplus.logger.Nemesys2XLStateMachineLogger=WARN, LogAppender;&#10;        </log4cplus>
+	<PluginLogger>NemesysLogger</PluginLogger>
+	<DefaultSyringes>
+		<Syringe ScaleVolume_ml="0.1" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="97" Caption="100µl Glass"/>
+		<Syringe ScaleVolume_ml="0.25" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="77" Caption="250µl Glass"/>
+		<Syringe ScaleVolume_ml="0.5" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="58" Caption="500µl Glass"/>
+		<Syringe ScaleVolume_ml="1.0" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="37" Caption="1.0ml Glass"/>
+		<Syringe ScaleVolume_ml="2.5" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="23" Caption="2.5ml Glass"/>
+		<Syringe ScaleVolume_ml="5.0" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="17" Caption="5.0ml Glass"/>
+		<Syringe ScaleVolume_ml="10" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="13" Caption="10.0ml Glass"/>
+		<Syringe ScaleVolume_ml="25" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="11" Caption="25.0ml Glass"/>
+		<Syringe ScaleVolume_ml="50" ScaleLength_mm="60" MaxStroke_mm="60" Material="Glass" MaxLevel_mm="60" PumpType="255" MaxPressure_bar="8" Caption="50.0ml Glass"/>
+		<Syringe ScaleVolume_ml="1" ScaleLength_mm="51.26" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="2" MaxPressure_bar="200" Caption="1.0ml Steel Mid Pressure"/>
+		<Syringe ScaleVolume_ml="2.5" ScaleLength_mm="49.99" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="2" MaxPressure_bar="200" Caption="2.5ml Steel Mid Pressure"/>
+		<Syringe ScaleVolume_ml="5" ScaleLength_mm="52.85" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="2" MaxPressure_bar="100" Caption="5.0ml Steel Mid Pressure"/>
+		<Syringe ScaleVolume_ml="10" ScaleLength_mm="49.89" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="2" MaxPressure_bar="50" Caption="10.0ml Steel Mid Pressure"/>
+		<Syringe ScaleVolume_ml="25" ScaleLength_mm="50.86" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="2" MaxPressure_bar="20" Caption="25.0ml Steel Mid Pressure"/>
+		<Syringe ScaleVolume_ml="50" ScaleLength_mm="51.91" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="2" MaxPressure_bar="10" Caption="50.0ml Steel Mid Pressure"/>
+		<Syringe ScaleVolume_ml="2.5" ScaleLength_mm="49.99" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="1" MaxPressure_bar="510" Caption="2.5ml Steel High Pressure"/>
+		<Syringe ScaleVolume_ml="5" ScaleLength_mm="52.85" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="1" MaxPressure_bar="220" Caption="5.0ml Steel High Pressure"/>
+		<Syringe ScaleVolume_ml="10" ScaleLength_mm="49.89" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="1" MaxPressure_bar="120" Caption="10.0ml Steel High Pressure"/>
+		<Syringe ScaleVolume_ml="25" ScaleLength_mm="50.86" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="1" MaxPressure_bar="50" Caption="25.0ml Steel High Pressure"/>
+		<Syringe ScaleVolume_ml="50" ScaleLength_mm="51.91" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="1" MaxPressure_bar="25" Caption="50.0ml Steel High Pressure"/>
+		<Syringe ScaleVolume_ml="100" ScaleLength_mm="50.89" MaxStroke_mm="60" Material="Steel" MaxLevel_mm="60" PumpType="1" MaxPressure_bar="12" Caption="100ml Steel High Pressure"/>
+		<Syringe ScaleVolume_ml="10" ScaleLength_mm="127.85" MaxStroke_mm="127.85" Material="Steel" MaxLevel_mm="127.85" PumpType="3" MaxPressure_bar="900" Caption="10ml Steel Ultra High Pressure"/>
+		<Syringe ScaleVolume_ml="25" ScaleLength_mm="124.34" MaxStroke_mm="124.34" Material="Steel" MaxLevel_mm="124.34" PumpType="3" MaxPressure_bar="350" Caption="25ml Steel Ultra High Pressure"/>
+		<Syringe ScaleVolume_ml="100" ScaleLength_mm="124.34" MaxStroke_mm="124.34" Material="Steel" MaxLevel_mm="124.34" PumpType="3" MaxPressure_bar="85" Caption="100ml Steel Ultra High Pressure"/>
+		<Syringe ScaleVolume_ml="250" ScaleLength_mm="127.32" MaxStroke_mm="127.32" Material="Steel" MaxLevel_mm="127.32" PumpType="3" MaxPressure_bar="35" Caption="250ml Steel Ultra High Pressure"/>
+		<Syringe ScaleVolume_ml="100" ScaleLength_mm="203.7183272" MaxStroke_mm="204" Material="Steel" MaxLevel_mm="204" PumpType="4" MaxPressure_bar="1500" Caption="100ml Steel 2XL"/>
+	</DefaultSyringes>
+	<IoChannelPresets>
+		<Preset Name="0..6bar (500..4500mV)" Caption="Pressure: 0..6bar (500..4500mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="6"/>
+			<Scaling x1="500" y1="0" x2="4500" y2="6"/>
+		</Preset>
+		<Preset Name="0..250bar (500..4500mV)" Caption="Pressure: 0..250bar (500..4500mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="250"/>
+			<Scaling x1="500" y1="0" x2="4500" y2="250"/>
+		</Preset>
+		<Preset Name="-1..5bar (0..5000mV)" Caption="Pressure: -1..5bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="-1" Max="5"/>
+			<Scaling x1="0" y1="-1" x2="5000" y2="5"/>
+		</Preset>
+		<Preset Name="0..6bar (0..5000mV)" Caption="Pressure: 0..6bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="6"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="6"/>
+		</Preset>
+		<Preset Name="0..40bar (0..5000mV)" Caption="Pressure: 0..40bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="40"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="40"/>
+		</Preset>
+		<Preset Name="0..60bar (0..5000mV)" Caption="Pressure: 0..60bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="60"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="60"/>
+		</Preset>
+		<Preset Name="0..100bar (0..5000mV)" Caption="Pressure: 0..100bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="100"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="100"/>
+		</Preset>
+		<Preset Name="0..250bar (0..5000mV)" Caption="Pressure: 0..250bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="250"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="250"/>
+		</Preset>
+		<Preset Name="0..600bar (0..5000mV)" Caption="Pressure: 0..600bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="600"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="600"/>
+		</Preset>
+		<Preset Name="0..1000bar (0..5000mV)" Caption="Pressure: 0..1000bar (0..5000mV)" DeviceSiSymbol="U">
+			<Icon>deviceicon_pressure2</Icon>
+			<ScaledValue SiSymbol="p" Unit="bar" Decimals="1" Min="0" Max="1000"/>
+			<Scaling x1="0" y1="0" x2="5000" y2="1000"/>
+		</Preset>
+	</IoChannelPresets>
+	<PressureControlledContiFlow enabled="1">
+		<AbsPressureErrPercent>0.5</AbsPressureErrPercent>
+		<GainPresets k1="10=0.1" k2="1500=0.002"/>
+		<Tuning InitialK="0.002" KStepFactor="1.25" SafePressureFactor="0.5" MaxPressureOvershot="1.02"/>
+		<PressurizingTimeSafetyFactor min="1.2" max="4" default="3"/>
+		<PressurizingVolumeSafetyFactor>3</PressurizingVolumeSafetyFactor>
+		<Valve PreSwitchDelay_ms="500" PostSwitchDelay_ms="500"/>
+		<ErrorMeasuring enabled="0" Duration_ms="4000" PressurePercent="1"/>
+		<Times PressureSensing_ms="50" MinPressurizing_s="0.5" Safety_s="1" CrossFlow_s="2" Settling_ms="2000"/>
+	</PressureControlledContiFlow>
+</Plugin>
+<MetaInfo>
+	<QmixDevices>
+		<QmixDevice Type="neMESYS_Low_Pressure" NodeId="2" ManualNodeId="false" Index="0" DeviceId="1" Simulated="false" SerialNumber="" DrawingNumber="" Configured="true"/>
+		<QmixDevice Type="neMESYS_Low_Pressure" NodeId="3" ManualNodeId="false" Index="1" DeviceId="2" Simulated="false" SerialNumber="" DrawingNumber="" Configured="true"/>
+	</QmixDevices>
+</MetaInfo>
