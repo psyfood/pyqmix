@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Plugin>
-    <ScriptingSystem>
-    </ScriptingSystem>
-    <log4cplus>
-        log4cplus.logger.ScriptingSystemLogger=WARN, LogAppender
-    </log4cplus>
-    <PluginLogger>ScriptingSystemLogger</PluginLogger>
-</Plugin>
