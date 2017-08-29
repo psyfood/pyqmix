@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Properties>
+	<labbCAN>
+		<Environment>
+			<LogCfgFilename>${COMMON_DOCUMENTS}/QmixElements/diaglogger.properties</LogCfgFilename>
+			<PluginDirectory>${APP_PATH}/plugins/labbcan</PluginDirectory>
+			<DataPath>${COMMON_DOCUMENTS}/QmixElements</DataPath>
+		</Environment>
+		<PluginList>
+			<Plugin>labbcan_ledarray</Plugin>
+		</PluginList>
+		<BusList>
+			<Bus>
+				<Type>Lcl::CCanooCANopenBus</Type>
+				<BusName>CANopenBus1</BusName>
+				<BaudRateKbit>1000</BaudRateKbit>
+				<Autostart>1</Autostart>
+				<ReadTimeoutMs>10</ReadTimeoutMs>
+				<WriteTimeoutMs>500</WriteTimeoutMs>
+				<HeartbeatTime_ms>1000</HeartbeatTime_ms>
+			</Bus>
+		</BusList>
+		<DeviceList/>
+		<ChannelList/>
+	</labbCAN>
+	<Core>
+		<PluginList>
+			<Plugin>qmixelements</Plugin>
+			<Plugin>scriptingsystem</Plugin>
+			<Plugin>labbcanservice</Plugin>
+			<Plugin>qmixdevices</Plugin>
+			<Plugin>datalogger</Plugin>
+			<Plugin>qmixv</Plugin>
+			<Plugin>qmixio</Plugin>
+			<Plugin>nemesys</Plugin>
+			<Plugin>qmixcontroller</Plugin>
+			<Plugin>pidtuning</Plugin>
+		</PluginList>
+		<ServiceWorkbenchVisible>false</ServiceWorkbenchVisible>
+	</Core>
+</Properties>

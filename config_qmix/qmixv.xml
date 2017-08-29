@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Plugin Valid="true">
+	<labbCAN>
+		<DeviceList/>
+		<ChannelList/>
+	</labbCAN>
+	<DeviceList/>
+	<log4cplus>log4cplus.logger.QmixVLogger=WARN, LogAppender</log4cplus>
+	<PluginLogger>QmixVLogger</PluginLogger>
+</Plugin>
+<MetaInfo>
+	<QmixDevices/>
+</MetaInfo>
