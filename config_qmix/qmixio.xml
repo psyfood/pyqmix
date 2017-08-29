@@ -5,7 +5,7 @@
 			<Device Name="QmixIO_B_1">
 				<Type>Lcl::CMultiIoCANopenDS401</Type>
 				<Bus>CANopenBus1</Bus>
-				<CANopenDevice NodeId="4">Usl::CBeckhoffBK51xx</CANopenDevice>
+				<CANopenDevice NodeId="8">Usl::CBeckhoffBK51xx</CANopenDevice>
 				<DigitalOutName>QmixIO_B_1_DO</DigitalOutName>
 				<DigitalInStates>0x00000000</DigitalInStates>
 				<Simulated>0</Simulated>
@@ -117,6 +117,6 @@
 </Plugin>
 <MetaInfo>
 	<QmixDevices>
-		<QmixDevice Type="QmixIO_B" NodeId="4" ManualNodeId="false" Index="2" DeviceId="1" Simulated="false" SerialNumber="CET-004676-1649" DrawingNumber="QMX-B029-01B" Configured="true"/>
+		<QmixDevice Type="QmixIO_B" NodeId="8" ManualNodeId="false" Index="6" DeviceId="1" Simulated="false" SerialNumber="CET-004676-1649" DrawingNumber="QMX-B029-01B" Configured="true"/>
 	</QmixDevices>
 </MetaInfo>

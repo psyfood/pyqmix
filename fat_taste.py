@@ -9,7 +9,7 @@ from win32api import GetSystemMetrics
 import numpy as np
 import os
 from psychopy import core, data, event, gui, visual 
-from qmix import QmixBus, QmixPump, _QmixError, QmixDigitalIO
+import qmix
 import pandas as pd
 from pphelper.hardware import Trigger
 
@@ -169,16 +169,16 @@ def run_trial(trial, fixation, ratingScale):
  
 #%% PUMPS INITIALIZATION
 if __name__ == '__main__':
-    
-    qmix_bus = QmixBus()
+    qmix.dll_dir = 'C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK'
+    qmix_bus = qmix.QmixBus(config_dir='C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix')
     qmix_bus.open()
     qmix_bus.start()
     
-    pump_2 = QmixPump(index=1)
-    pump_3 = QmixPump(index=2)
-    pump_4 = QmixPump(index=3)
-    pump_5 = QmixPump(index=4)
-    pump_6 = QmixPump(index=5)
+    pump_2 = qmix.QmixPump(index=1)
+    pump_3 = qmix.QmixPump(index=2)
+    pump_4 = qmix.QmixPump(index=3)
+    pump_5 = qmix.QmixPump(index=4)
+    pump_6 = qmix.QmixPump(index=5)
     pump_2.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
     pump_3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
     pump_4.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")

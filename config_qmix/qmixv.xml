@@ -4,7 +4,7 @@
 		<DeviceList/>
 		<ChannelList/>
 	</labbCAN>
-	<ValveList/>
+	<DeviceList/>
 	<log4cplus>log4cplus.logger.QmixVLogger=WARN, LogAppender</log4cplus>
 	<PluginLogger>QmixVLogger</PluginLogger>
 </Plugin>

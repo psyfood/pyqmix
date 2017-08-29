@@ -2,19 +2,20 @@
 """
 Created on Thu May 18 10:58:59 2017
 
-@author: alfine-l
+@author: Alfine Lorenzo
 
 """
 import sys
 if sys.version_info[0] < 3:
     from builtins import bytes
-    # from __builtin__ import bytes
     pass
-
 
 import os
 from cffi import FFI
 import time
+
+global dll_dir
+dll_dir = None
 
 def CHK(return_code, funcname, *args):
     """
@@ -49,7 +50,6 @@ def CHK(return_code, funcname, *args):
     else:  
         e = _QmixError(return_code)
         error_string = e.error_string
-#        msg = f'{error_string}, Error number: {e.error_number}, Error code {e.error_code}'
         msg = error_string + ", Error number: " + str(e.error_number) + ", Error code: " + str(e.error_code) 
         raise RuntimeError(msg)
         
@@ -78,32 +78,23 @@ class QmixBus(object):
         Absolute path to the folder that contains Qmix .dll files.
         
     """     
-    def __init__(self, config_dir=None, dll_dir=None):
-        if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
-        else:
-            self.dll_dir = dll_dir
-            
+    def __init__(self, config_dir=None):
+        
+        self.dll_dir = dll_dir            
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_Bus_API.dll')
-
-        if config_dir is None:
-            self.config_dir = os.path.normpath('C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\test_qmix2017')
-        else:
-            self.config_dir = config_dir
-        
+        self.config_dir = config_dir        
         self._ffi = FFI()
-        self._ffi.cdef(BUS_HEADER)
-        
+        self._ffi.cdef(BUS_HEADER)        
         self._dll = self._ffi.dlopen(self.dll_file)
         self.is_open = False
         self.is_started = False
-
+        
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
         r = func(*args)
         r = CHK(r, func_name, *args)
-        return r     
+        return r
                   
     def open(self):
         """
@@ -234,34 +225,26 @@ class QmixPump(object):
     Istantiate a pump object.
 
     Parameters
-    ----------
-    dll_dir : str
-        Absolute path to the folder that contains Qmix .dll files.
-        
+    ----------        
     index : int
         Index of the pump to istantiate. It is related with the config files.
         First pump has ``index = 0``, second has ``index = 1`` and so on.
         
     """
-    def __init__(self, dll_dir=None, index=0, name='', external_valves=None):
-        if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
-        else:
-            self.dll_dir = dll_dir
-            
+    def __init__(self, index=0, name='', external_valves=None):
+
+        self.dll_dir = dll_dir               
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_Pump_API.dll')
         
         self._ffi = FFI()
-        self._ffi.cdef(PUMP_HEADER)
-                                          
+        self._ffi.cdef(PUMP_HEADER)                                          
         self._dll = self._ffi.dlopen(self.dll_file)
         
         self._handle = self._ffi.new('dev_hdl *', 0)
         self._call('LCP_GetPumpHandle', index, self._handle)        
 
-        self._flow_rate_max = self._ffi.new('double *')
-        
+        self._flow_rate_max = self._ffi.new('double *')       
         self._p_fill_level = self._ffi.new('double *')
         self._p_dosed_volume = self._ffi.new('double *')
         self._p_flow_rate = self._ffi.new('double *')
@@ -456,7 +439,7 @@ class QmixPump(object):
                                   getattr(self._dll, time_unit.upper()))
     
     # TODO: find reasonable default parameters
-    def set_syringe_param(self, inner_diameter_mm=23, max_piston_stroke_mm=60):
+    def set_syringe_param(self, inner_diameter_mm=23.03, max_piston_stroke_mm=60):
         """
         Set syringe parameters.
         
@@ -466,7 +449,8 @@ class QmixPump(object):
         Parameters
         ----------
         inner_diameter_mm : float
-            Inner diameter of the syringe tube in millimetres.
+            Inner diameter of the syringe tube in millimetres. Default is 23.03 (mm) that 
+            indicates a 25 ml syringe. For the 50 ml syringe use 32.5 (mm).
             
         max_piston_stroke_mm : float
             The maximum piston stroke defines the maximum position the piston can 
@@ -518,7 +502,6 @@ class QmixPump(object):
         -------
 
         """          
-        # self.valve.switch_position(1)
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)       
         if blocking_wait:
@@ -545,6 +528,7 @@ class QmixPump(object):
             
         switch_valve_when_finished : bool
             If set to ``True``, it switches valve to postion 1 when dispense is finished.
+            It only has effect if ``blocking_wait = True``. 
             
         Returns
         -------
@@ -632,7 +616,7 @@ class QmixPump(object):
         self._call('LCP_StopPumping', self._handle[0])
     
     #TODO: modify?    
-    def stop_all_pumps(self): # should be callable without a pump object
+    def stop_all_pumps(self):
         """
         Immediately stop pumping.
 
@@ -742,6 +726,7 @@ class QmixPump(object):
     def remove_external_valve(self, name):
         del self.ext_valves[name]
 
+
 VALVE_HEADER =  """
     typedef long long dev_hdl;
     long LCV_GetNoOfValves();
@@ -762,9 +747,6 @@ class QmixValve(object):
 
     Parameters
     ----------
-    dll_dir : str
-        Absolute path to the folder that contains Qmix .dll files.
-        
     index : int
         Index of the valve to istantiate. If a ``handle`` is passed this parameter
         it is not used.
@@ -774,18 +756,14 @@ class QmixValve(object):
         parameter is passed.
         
     """    
-    def __init__(self, dll_dir=None, index=0, handle=None, name=''):
-        if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
-        else:
-            self.dll_dir = dll_dir
-            
+    def __init__(self, index=0, handle=None, name=''):
+        
+        self.dll_dir = dll_dir            
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_Valve_API.dll')
     
         self._ffi = FFI()
-        self._ffi.cdef(VALVE_HEADER)
-                                          
+        self._ffi.cdef(VALVE_HEADER)                                          
         self._dll = self._ffi.dlopen(self.dll_file)
         
         if handle is None:
@@ -904,26 +882,21 @@ DIGITAL_IO_HEADER =  """
     
  """
 
+
 class QmixDigitalIO(object):
     """
     Istantiate an external channel controlled by diglital output signal.
 
     Parameters
     ----------
-    dll_dir : str
-        Absolute path to the folder that contains Qmix .dll files.
-        
     index : int
         Index of the digital channel to istantiate. It is related with the config files.
         First channel has ``index = 0``, second has ``index = 1`` and so on.
                 
     """     
-    def __init__(self, dll_dir=None, index=0, name=''):
-        if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
-        else:
-            self.dll_dir = dll_dir
-            
+    def __init__(self, index=0, name=''):
+
+        self.dll_dir = dll_dir            
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_DigIO_API.dll')
         self._ffi = FFI()
@@ -1194,13 +1167,11 @@ ERROR_HEADER = """
     #define ERR_APP                             0x8000  ///< application specific errors start here
 """
 
+
 class _QmixError(object):
-    def __init__(self, error_number, dll_dir=None):
-        if dll_dir is None:
-            self.dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
-        else:
-            self.dll_dir = dll_dir
-            
+    def __init__(self, error_number):
+        
+        self.dll_dir = dll_dir
         self.dll_file = os.path.join(self.dll_dir,
                                  'usl.dll')
         self._ffi = FFI()
@@ -1222,9 +1193,6 @@ class _QmixError(object):
         s = self._dll.ErrorToString(int(e, 16))
         return self._ffi.string(s).decode('utf8')
         
-    
-
-            
     
 #%% INITIALIZATION
 if __name__ == '__main__':
@@ -1266,103 +1234,11 @@ if __name__ == '__main__':
     ch6 = QmixDigitalIO(index=6)
     ch7 = QmixDigitalIO(index=7)
 
-    #TEST3 = QmixPump(index=2)
-    #TEST3.enable()
-    #TEST3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-    #TEST3.set_volume_unit(prefix="milli", unit="litres")
-    #TEST3.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-    
-    #%% TEST2
-    b.valve.current_position
-    c.valve.switch_position(position=1)
-    c._dll.LCP_Aspirate(c._handle[0], 10, 2)
-    d._dll.LCP_SyringePumpCalibrate(d._handle[0])
-    c.aspirate(4,2)
-
-    #%% CALIBRATE
+  #%% CALIBRATE
     b.calibrate(blocking_wait=False)
     c.calibrate(blocking_wait=False)
     d.calibrate(blocking_wait=False)
     e.calibrate(blocking_wait=False)    
     
-    #%% TEST 3
-    time.sleep(3)
-    ch0.write_on(1)
-    time.sleep(1.5)
-    ch1.write_on(1)
-    time.sleep(1.5)
-    ch2.write_on(1)
-    time.sleep(1.5)
-    ch3.write_on(1)
-    time.sleep(1.5)
-    ch4.write_on(1)
-    time.sleep(1.5)
-    ch5.write_on(1)
-    time.sleep(1.5)
-    ch6.write_on(1)
-    time.sleep(1.5)
-    ch7.write_on(1)
-    time.sleep(1.5)
-    
-    ch0.write_on(0)
-    ch1.write_on(0)
-    ch2.write_on(0)
-    ch3.write_on(0)
-    ch4.write_on(0)
-    ch5.write_on(0)
-    ch6.write_on(0)
-    ch7.write_on(0)
-    time.sleep(2.5)
-    
-    ch0.write_on(1)
-    ch1.write_on(1)
-    ch2.write_on(1)
-    ch3.write_on(1)
-    ch4.write_on(1)
-    ch5.write_on(1)
-    ch6.write_on(1)
-    ch7.write_on(1)
-    time.sleep(2.5)
-    
-    ch7.write_on(0)
-    time.sleep(1.5)
-    ch6.write_on(0)
-    time.sleep(1.5)
-    ch5.write_on(0)
-    time.sleep(1.5)
-    ch4.write_on(0)
-    time.sleep(1.5)
-    ch3.write_on(0)
-    time.sleep(1.5)
-    ch2.write_on(0)
-    time.sleep(1.5)
-    ch1.write_on(0)
-    time.sleep(1.5)
-    ch0.write_on(0)
-    time.sleep(1.5)
-
-##%% test     
-#qmix_bus = QmixBus()
-#qmix_bus.open()
-#qmix_bus.start()
-#
-#pump_3 = QmixPump(index=2)
-#pump_6 = QmixPump(index=5)
-#
-#pump_3.enable()
-#pump_6.enable()
-#   
-#pump_3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-#pump_6.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-#
-#pump_3.set_volume_unit(prefix="milli", unit="litres")
-#pump_6.set_volume_unit(prefix="milli", unit="litres")
-#
-#pump_3.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
-#pump_6.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-#
-##%% CALIBRATION
-#pump_3.calibrate(blocking_wait=False)
-#pump_6.calibrate(blocking_wait=False)
 
 
