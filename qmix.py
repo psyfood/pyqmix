@@ -332,7 +332,7 @@ class QmixPump(object):
         Parameters
         ----------
         blocking_wait : bool
-            Whether to block further program executiong until done.
+            Whether to block further program execution until done.
 
         """
         self._call('LCP_SyringePumpCalibrate', self._handle[0])
@@ -614,8 +614,8 @@ class QmixPump(object):
         """
         Read the current flow rate.
         
-        This does not read the real flow rate instead this function returns simply
-        the cached flow rate demand value.
+        This does not assess the actual current flow rate. Instead, this method
+        simply returns the cached (desired) flow rate value.
         
         Returns
         -------
