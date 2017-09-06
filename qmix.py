@@ -1,23 +1,21 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Thu May 18 10:58:59 2017
 
-@author: Alfine Lorenzo
-
-"""
-import sys
-if sys.version_info[0] < 3:
-    from builtins import bytes
-    pass
 
 import os
 from cffi import FFI
 import time
+import sys
 
-global dll_dir
+if sys.version_info[0] < 3:
+    # Python 2 compatibility; requires `future` package.
+    from builtins import bytes
+
+
 dll_dir = None
 
-def CHK(return_code, funcname, *args):
+
+def CHK(return_code, *args):
     """
     Check if the return value of the invoked function returned an error.
 
@@ -28,8 +26,6 @@ def CHK(return_code, funcname, *args):
     ----------
     return_code : int
         The code returned from a Qmix DLL function.
-    funcname : str
-        The name of the invoked DLL function.
     args
         All arguments passed to the function ``funcname``.
 
@@ -50,11 +46,12 @@ def CHK(return_code, funcname, *args):
     else:  
         e = _QmixError(return_code)
         error_string = e.error_string
-        msg = error_string + ", Error number: " + str(e.error_number) + ", Error code: " + str(e.error_code) 
+        msg = (error_string + ", Error number: " + str(e.error_number) +
+               ", Error code: " + str(e.error_code))
         raise RuntimeError(msg)
         
 
-BUS_HEADER =  """
+BUS_HEADER = """
     typedef long long labb_hdl;    
     typedef long long dev_hdl;    
     long LCB_Open(const char* pDeviceConfigPath);    
@@ -62,6 +59,7 @@ BUS_HEADER =  """
     long LCB_Stop();    
     long LCB_Close();
  """
+
 
 class QmixBus(object):
     """
@@ -72,23 +70,28 @@ class QmixBus(object):
     Parameters
     ----------
     config_dir : str
-        Absolute path to the folder that contains the device configuration files (XML config files).
+        Absolute path to the folder that contains the device configuration files
+        (XML config files).
         
     dll_dir : str
         Absolute path to the folder that contains Qmix .dll files.
         
     """     
-    def __init__(self, config_dir=None):
+    def __init__(self, config_dir):
         
         self.dll_dir = dll_dir            
         self.dll_file = os.path.join(self.dll_dir,
-                                 'labbCAN_Bus_API.dll')
+                                     'labbCAN_Bus_API.dll')
         self.config_dir = config_dir        
         self._ffi = FFI()
         self._ffi.cdef(BUS_HEADER)        
         self._dll = self._ffi.dlopen(self.dll_file)
         self.is_open = False
         self.is_started = False
+
+    def __del__(self):
+        self.stop()
+        self.close()
         
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
@@ -98,15 +101,10 @@ class QmixBus(object):
                   
     def open(self):
         """
-        Initialize LabCanBus instance.
+        Initialize labbCAN bus.
         
-        Initializes resources for a LabCanBus instance, connects to LabCanBus and scans for connected devices.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
+        Initializes resources for a labbCAN bus instance, opens the bus and
+        scans for connected devices.
 
         """        
         self._call('LCB_Open', bytes(self.config_dir,'utf8'))
@@ -115,32 +113,19 @@ class QmixBus(object):
     
     def close(self):
         """
-        Close LabCanBus instance.
+        Close labbCAN bus.
         
-        This call deletes all internal data structures and frees all allocated resources.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-
-        """          
+        """
         self._call('LCB_Close')
         self.is_open = False
     
     def start(self):
         """
-        Start network communication.
+        Start bus network communication.
         
-        This function sets all connected devices into state operational and enabled.
-        After a call to this function it is possible to access the connected devices.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
+        Sets all connected devices operational and enables them.
+        Connected devices can be accessed only after this method has been
+        invoked.
 
         """         
         self._call('LCB_Start')
@@ -149,25 +134,16 @@ class QmixBus(object):
     
     def stop(self):
         """
-        Stop network communication.
+        Stop bus network communication.
         
-        This function stops network communication and closes the CAN device driver.
-        The function should be called by application before ``QmixBus.close()``.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
+        Stops network communication and closes the labbCAN device.
+        The method should be called before calling
+        :func:`qmix.QmixBus.close``.
 
         """         
         self._call('LCB_Stop')
         self.is_started = False
-            
-    def __del__(self):
-        self.stop()
-        self.close()
-        
+
 
 PUMP_HEADER = """
                      #define LITRES 68 //!< LITRES
@@ -220,22 +196,22 @@ PUMP_HEADER = """
                      long LCP_RestoreDrivePosCnt(dev_hdl hPump, long PosCntValue);
                      """
 
+
 class QmixPump(object):
     """
-    Istantiate a pump object.
+    Qmix pump interface.
 
     Parameters
     ----------        
     index : int
-        Index of the pump to istantiate. It is related with the config files.
+        Index of the pump to access. It is related with the config files.
         First pump has ``index = 0``, second has ``index = 1`` and so on.
         
     """
     def __init__(self, index=0, name='', external_valves=None):
-
         self.dll_dir = dll_dir               
         self.dll_file = os.path.join(self.dll_dir,
-                                 'labbCAN_Pump_API.dll')
+                                     'labbCAN_Pump_API.dll')
         
         self._ffi = FFI()
         self._ffi.cdef(PUMP_HEADER)                                          
@@ -280,26 +256,18 @@ class QmixPump(object):
         
         Returns
         -------
-        int                 
-            1	- Pump drive is enabled, pumping is possible
-            0	- Pump drive is disabled - pump head is free running
+        int
+            1 - Pump drive is enabled, pumping is possible
+            0 - Pump drive is disabled - pump head is free running
 
         """        
         return self._call('LCP_IsEnabled', self._handle[0])
            
     def enable(self):
         """
-        Set axis into enabled state.
+        Enable the pump.
         
-        If the function ``QmixPump.is_enabled()`` indicates that the device is disabled then call this function.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-
-        """            
+        """
         return self._call('LCP_Enable',self._handle[0])
     
     @property    
@@ -307,14 +275,15 @@ class QmixPump(object):
         """
         Check if pump is in a fault state.
 
-        If the device is in fault state then it is necessary to call ``QmixPump.clear_fault_state()``
-        to clear the fault state and then ``QmixPump.enable()`` to enable the pump drive.
+        If the device is in fault state then it is necessary to call
+        :func:`qmix.QmixPump.clear_fault_state``, followed by a call to
+        :func:`QmixPump.enable` to enable the pump.
         
         Returns
         -------
         int                 
-            1	- Pump is in fault state
-            0	- Pump is not in fault state
+            1 - Pump is in fault state
+            0 - Pump is not in fault state
 
         """         
         return self._call('LCP_IsInFaultState', self._handle[0])    
@@ -323,16 +292,13 @@ class QmixPump(object):
         """
         Clear fault condition.
         
-        This is some kind of error acknowledge that clears the last fault and sets the 
-        device in an error free state. If the function ``QmixPump.is_in_fault_state()`` 
-        indicates that device is in fault state, then this function may clear the fault.
-        If the device is still in fault state after this function was called then a serious failure occurred.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
+        Clears the last fault and resets the
+        device to an error-free state. If
+        `qmix.QmixPump.is_in_fault_state`
+        indicates that device is in fault state, then this method may resolve
+        this problem.
+        If the device is still in fault state after this method was called,
+        we have to assume that a serious failure occurred.
 
         """         
         return self._call('LCP_ClearFault', self._handle[0])        
@@ -340,15 +306,15 @@ class QmixPump(object):
     @property 
     def is_calibration_finished(self):
         """
-        Checks if calibration is finished or performed.
+        Check if calibration is finished still ongoing.
         
         Returns
         -------
-        int                                
-            0	- Device is calibrating
-            1	- Device calibration has finished/was perfomed
+        bool
+            True - Device calibration has finished/was perfomed
+            False - Device is calibrating
 
-        """         
+        """
         r = self._call('LCP_IsCalibrationFinished', self._handle[0])
         if r == 0:
             return False
@@ -366,7 +332,7 @@ class QmixPump(object):
         Parameters
         ----------
         blocking_wait : bool
-            Whether to block until done.
+            Whether to block further program execution until done.
 
         """
         self._call('LCP_SyringePumpCalibrate', self._handle[0])
@@ -383,36 +349,35 @@ class QmixPump(object):
         Returns
         -------
         int                                
-            >=	0 Number of detected pump devices
+            Number of detected pump devices
 
         """          
         return self._call('LCP_GetNoOfPumps')
 
     def set_volume_unit(self, prefix=None, unit=None):
         """
-        This function sets the default volume unit.
+        Set the default volume unit.
         
-        All parameters of subsequent dosing function calls are given in this new unit.
+        All parameters of subsequent dosing method calls are given in this new
+        unit.
 
         Parameters
         ----------
         prefix : str
-            The prefix of the SIunit: ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+            The prefix of the SIunit:
+            ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
             
         unit : str
             The volume unit identifier: ``litres``.
 
-        Returns
-        -------
-
         """         
         self._call('LCP_SetVolumeUnit', self._handle[0],
-                                    getattr(self._dll, prefix.upper()),
-                                    getattr(self._dll, unit.upper()))
+                   getattr(self._dll, prefix.upper()),
+                   getattr(self._dll, unit.upper()))
         
     def set_flow_unit(self, prefix=None, volume_unit=None, time_unit=None):
         """
-        Sets the flow unit for a certain pump.
+        Set the flow unit for a certain pump.
         
         The flow unit defines the unit to be used for all flow values passed to 
         API functions or retrieved from API functions.
@@ -420,28 +385,26 @@ class QmixPump(object):
         Parameters
         ----------
         prefix : str
-            The prefix of the SIunit: ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+            The prefix of the SIunit:
+            ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
             
         volume_unit : str
             The volume unit identifier: ``litres``.
             
         time_unit : str
-            The time unit (denominator) of the velocity unit: ``per_hour``, ``per_minute``,
-            ``per_second``.
-
-        Returns
-        -------
+            The time unit (denominator) of the velocity unit:
+            ``per_hour``, ``per_minute``, ``per_second``.
 
         """         
         self._call('LCP_SetFlowUnit', self._handle[0],
-                                  getattr(self._dll, prefix.upper()),
-                                  getattr(self._dll, volume_unit.upper()),
-                                  getattr(self._dll, time_unit.upper()))
+                   getattr(self._dll, prefix.upper()),
+                   getattr(self._dll, volume_unit.upper()),
+                   getattr(self._dll, time_unit.upper()))
     
     # TODO: find reasonable default parameters
     def set_syringe_param(self, inner_diameter_mm=23.03, max_piston_stroke_mm=60):
         """
-        Set syringe parameters.
+        Set syringe properties.
         
         If you change the syringe in one device, you need to setup the new syringe 
         parameters to get proper conversion of flow rate und volume units.
@@ -449,28 +412,28 @@ class QmixPump(object):
         Parameters
         ----------
         inner_diameter_mm : float
-            Inner diameter of the syringe tube in millimetres. Default is 23.03 (mm) that 
-            indicates a 25 ml syringe. For the 50 ml syringe use 32.5 (mm).
+            Inner diameter of the syringe tube in millimetres. Default is
+            23.03 (mm) that indicates a 25 ml syringe. For the 50 ml syringe
+            use 32.5 (mm).
             
         max_piston_stroke_mm : float
-            The maximum piston stroke defines the maximum position the piston can 
-            be moved to before it slips out of the syringe tube. The maximum piston
-            stroke limits the maximum travel range of the syringe pump pusher.
-            
-        Returns
-        -------
+            The maximum piston stroke defines the maximum position the piston
+            can be moved to before it slips out of the syringe tube. The maximum
+            piston stroke limits the maximum travel range of the syringe pump
+            pusher.
 
         """        
         self._call('LCP_SetSyringeParam', self._handle[0], inner_diameter_mm,
-                                      max_piston_stroke_mm)
-    @property    
+                   max_piston_stroke_mm)
+
+    @property
     def max_flow_rate(self):
         """
-        Get maximum flow rate that is realizable with current dosing unit configuration.
+        Maximum flow rate for the current dosing unit configuration.
         
-        The maximum flow rate depends on the mechanical configuration of the dosing 
-        unit (gear) and on the syringe configuration. If larger syringes are used 
-        then larger flow rates are realizable.
+        The maximum flow rate depends on the mechanical configuration of the
+        dosing unit (gear) and on the syringe configuration. If larger syringes
+        are used then larger flow rates are realizable.
         
         Returns
         -------
@@ -483,9 +446,7 @@ class QmixPump(object):
          
     def aspirate(self, volume, flow_rate, blocking_wait=False):
         """
-        Aspirate a certain volume with a certain flow rate.
-        
-        It also switches the valve in position 1 (green led activated).
+        Aspirate a certain volume with the specified flow rate.
 
         Parameters
         ----------
@@ -496,12 +457,14 @@ class QmixPump(object):
             The flow rate to use to aspirate the volume, negative flow rates are invalid.
             
         blocking_wait : bool
-            Whether to block until done.        
-            
-        Returns
-        -------
+            Whether to block until done.
 
-        """          
+        Notes
+        -----
+        This method switches the valve in position 1 (green led activated)
+        before the actual aspiration begins.
+
+        """
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)       
         if blocking_wait:
@@ -509,7 +472,7 @@ class QmixPump(object):
                 time.sleep(0.0005)
                 
     def dispense(self, volume, flow_rate, blocking_wait=False, 
-                             switch_valve_when_finished=False):
+                 switch_valve_when_finished=False):
         """
         Dispense a certain volume with a certain flow rate.
         
@@ -521,14 +484,15 @@ class QmixPump(object):
             The volume to dispense in physical units.
             
         flow_rate : float
-            The flow rate to use to dispense the volume, negative flow rates are invalid.
+            The flow rate to use to dispense the volume, negative flow rates are
+            invalid.
             
         blocking_wait : bool
             Whether to block until done.
             
         switch_valve_when_finished : bool
-            If set to ``True``, it switches valve to postion 1 when dispense is finished.
-            It only has effect if ``blocking_wait = True``. 
+            If set to ``True``, it switches valve to postion 1 when dispense is
+            finished. It only has effect if ``blocking_wait = True``.
             
         Returns
         -------
@@ -545,32 +509,32 @@ class QmixPump(object):
                
     def set_fill_level(self, level, flow_rate, blocking_wait=False):
         """
-        Pumps fluid with the given flow rate until the requested fill level is reached.
+        Pumps fluid with the given flow rate until the requested fill level is
+        reached.
         
-        Depending on the requested fill level given in ``level`` parameter this function
-        may cause aspiration or dispension of fluid. If it aspirates it switches the
-        valve in position 1. 0 if it dispenses.
+        Depending on the requested fill level given in ``level`` parameter this
+        function may cause aspiration or dispension of fluid. If it aspirates it
+        switches the valve in position 1. 0 if it dispenses.
 
         Parameters
         ----------
         level : float
-            The requested fill level. A level of 0 indicates a completely empty syringe.
+            The requested fill level. A level of 0 indicates a completely empty
+            syringe.
             
         flow_rate : float
             The flow rate to use for pumping.
             
         blocking_wait : bool
             Whether to block until done.
-                        
-        Returns
-        -------
 
         """        
         if level < self.get_fill_level():
             self.valve.switch_position(self.valve.dispense_pos)
         else:
             self.valve.switch_position(self.valve.aspirate_pos)         
-        self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)      
+        self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)
+
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
@@ -584,13 +548,11 @@ class QmixPump(object):
         Parameters
         ----------            
         flow_rate : float
-            A positive flow rate indicates dispensing and a negative flow rate indicates aspiration.
+            A positive flow rate indicates dispensing and a negative flow rate
+            indicates aspiration.
             
         blocking_wait : bool
             Whether to block until done.
-                        
-        Returns
-        -------
 
         """        
         if flow_rate > 0:
@@ -606,25 +568,13 @@ class QmixPump(object):
         """
         Immediately stop pumping.
 
-        Parameters
-        ----------            
-                        
-        Returns
-        -------
-
         """          
         self._call('LCP_StopPumping', self._handle[0])
     
-    #TODO: modify?    
+    #TODO: modify?
     def stop_all_pumps(self):
         """
-        Immediately stop pumping.
-
-        Parameters
-        ----------            
-                        
-        Returns
-        -------
+        Immediately stop all pumps.
 
         """     
         self._call('LCP_StopAllPumps')
@@ -664,8 +614,8 @@ class QmixPump(object):
         """
         Read the current flow rate.
         
-        This does not read the real flow rate instead this function returns simply
-        the cached flow rate demand value.
+        This does not assess the actual current flow rate. Instead, this method
+        simply returns the cached (desired) flow rate value.
         
         Returns
         -------
@@ -683,10 +633,8 @@ class QmixPump(object):
         
         Returns
         -------
-        int                                
-            1	- Device is pumping
-            0	- Device is stopped
-
+        bool
+            `True` if pumping, `False` otherwise.
         """         
         r = self._call('LCP_IsPumping', self._handle[0]) 
         return bool(r)
@@ -694,13 +642,12 @@ class QmixPump(object):
     @property
     def has_valve(self):
         """
-        Returns 1 if this pump has an valve assigned.
+        Check if the pump has a valve assigned.
         
         Returns
         -------
-        int                                
-            0	- No valve assigned to this pump
-            1	- Valve assigned to this pump
+        bool
+            `True` if a valve is present, `False` otherwise.
 
         """        
         r = self._call('LCP_HasValve', self._handle[0])
@@ -714,7 +661,7 @@ class QmixPump(object):
         Returns
         -------
         int                                
-           Handle to valve device or 0 if no valve is associated 
+           Handle to valve device, or 0 if no valve is associated
 
         """          
         self._call('LCP_GetValveHandle', self._handle[0], self._valve_handle)
@@ -731,33 +678,33 @@ VALVE_HEADER =  """
     typedef long long dev_hdl;
     long LCV_GetNoOfValves();
     long LCV_LookupValveByName(const char *pValveName,
-	   dev_hdl* ValveHandle);
+        dev_hdl* ValveHandle);
     long LCV_GetValveHandle(unsigned char Index,
-	   dev_hdl* ValveHandle);
+        dev_hdl* ValveHandle);
     long LCV_NumberOfValvePositions(dev_hdl hValve);
     long LCV_ActualValvePosition(dev_hdl hValve);
     long LCV_SwitchValveToPosition(dev_hdl hValve,
-	                                              int     LogicalValvePosition);
+        int LogicalValvePosition);
     
  """
 
+
 class QmixValve(object):
     """
-    Istantiate a valve object.
+    Qmix valve interface.
 
     Parameters
     ----------
     index : int
-        Index of the valve to istantiate. If a ``handle`` is passed this parameter
-        it is not used.
+        Index of the valve to istantiate. If a ``handle`` is passed, this
+        parameter will be ignored.
         
     handle :  dev_hdl
-        Used when initializing a ``QmixPump`` object. It is not used if a ``index`` 
-        parameter is passed.
+        Used when initializing a ``QmixPump`` object. It is not used if an
+        ``index`` parameter is passed.
         
     """    
     def __init__(self, index=0, handle=None, name=''):
-        
         self.dll_dir = dll_dir            
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_Valve_API.dll')
@@ -788,7 +735,7 @@ class QmixValve(object):
     @property
     def number_of_positions(self):
         """
-        Returns the number of valve positions.
+        Return the number of valve positions.
         
         Each valve has a number of available valve positions. 
         A switching valve has two positions.
@@ -796,7 +743,7 @@ class QmixValve(object):
         Returns
         -------
         int                                
-           >0	Number of valve positions 
+           >0 Number of valve positions
 
         """        
         return self._call('LCV_NumberOfValvePositions', self._handle[0])
@@ -804,11 +751,11 @@ class QmixValve(object):
     @property
     def current_position(self):
         """
-        Returns the current logical valve position.
+        Return the current logical valve position.
         
         Each valve position is identified by a logical valve position identifier 
-        from 0 to number of valve positions - 1. This function returns the logical valve
-        position identifier for the current valve position.
+        from 0 to number of valve positions - 1. This function returns the
+        logical valve position identifier for the current valve position.
         
         Returns
         -------
@@ -820,15 +767,12 @@ class QmixValve(object):
     
     def switch_position(self, position=0):
         """
-        Switches the valve to a certain logical valve position.
+        Switch the valve to a certain logical valve position.
 
         Parameters
         ---------- 
         position : int
             Logical valve target position index.
-                        
-        Returns
-        -------
 
         """        
         self._call('LCV_SwitchValveToPosition', self._handle[0], position)
@@ -836,11 +780,8 @@ class QmixValve(object):
 
 class QmixExternalValve(QmixValve):
     """
-    Istantiate an external valve object, controlled by Qmix I/O-B.
+    An external valve, controlled by Qmix I/O-B.
 
-    Parameters
-    ----------
-        
     """    
     def __init__(self, index=0, name=''):
         self.index = index
@@ -870,28 +811,28 @@ class QmixExternalValve(QmixValve):
     
 DIGITAL_IO_HEADER =  """
     typedef long long dev_hdl;
-    long LCDIO_LookupOutChanByName(const char* pChannelName, dev_hdl *   pOutChanHdl);
-    long LCDIO_LookupInChanByName(const char* pChannelName, dev_hdl*    pInChanHdl);
+    long LCDIO_LookupOutChanByName(const char* pChannelName, dev_hdl * pOutChanHdl);
+    long LCDIO_LookupInChanByName(const char* pChannelName, dev_hdl* pInChanHdl);
     long LCDIO_WriteOn(dev_hdl OutChanHdl, int On);
     long LCDIO_IsOutputOn(dev_hdl OutChanHdl);
     long LCDIO_IsInputOn(dev_hdl InChanHdl);
-    long LCDIO_GetChanName(dev_hdl  hChan, char    *pNameStringBuf,
-                                            int      StringBufSize);
+    long LCDIO_GetChanName(dev_hdl hChan, char *pNameStringBuf,
+                                            int StringBufSize);
     long LCDIO_LookupIoDeviceByName(const char *pName,
-                                                     dev_hdl    *pIoDeviceHdl);
+                                    dev_hdl *pIoDeviceHdl);
     
  """
 
 
 class QmixDigitalIO(object):
     """
-    Istantiate an external channel controlled by diglital output signal.
+    Qmix IO-B diglital I/O channel.
 
     Parameters
     ----------
     index : int
-        Index of the digital channel to istantiate. It is related with the config files.
-        First channel has ``index = 0``, second has ``index = 1`` and so on.
+        Index of the digital channel. It is related with the config files.
+        First channel has ``index=0``, second has ``index=1`` and so on.
                 
     """     
     def __init__(self, index=0, name=''):
@@ -908,7 +849,9 @@ class QmixDigitalIO(object):
         
         self._ch_name="QmixIO_B_1_DO"
         self._channel = self._ch_name + str(index) 
-        self._call('LCDIO_LookupOutChanByName', bytes(self._channel,'utf8'), self._handle)
+        self._call('LCDIO_LookupOutChanByName',
+                   bytes(self._channel,'utf8'),
+                   self._handle)
         
         self.name = name
 
@@ -921,7 +864,7 @@ class QmixDigitalIO(object):
     @property
     def is_output_on(self):
         """
-        Return the state of a digital output channel.
+        Current state of a digital output channel.
         
         Returns
         -------
@@ -941,9 +884,6 @@ class QmixDigitalIO(object):
         ---------- 
         state : int
             State to set 0 = switch off, 1 = switch on.
-                        
-        Returns
-        -------
 
         """         
         self._call('LCDIO_WriteOn', self._handle[0], state)
@@ -1194,36 +1134,45 @@ class _QmixError(object):
         return self._ffi.string(s).decode('utf8')
         
     
-#%% INITIALIZATION
 if __name__ == '__main__':
-    a = QmixBus()
-    a.open()
-    a.start()
+    import os.path as op
+
+    dll_dir = op.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
+    config_dir = op.normpath('C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\'
+                             'config_qmix')
+
+    bus = QmixBus(config_dir=config_dir)
+    bus.open()
+    bus.start()
     
-    b = QmixPump(index=0)
-    c = QmixPump(index=1)
-    d = QmixPump(index=2)
-    e = QmixPump(index=3)
+    pump_0 = QmixPump(index=0)
+    pump_1 = QmixPump(index=1)
+    pump_2 = QmixPump(index=2)
+    pump_3 = QmixPump(index=3)
     
-    b.enable()
-    c.enable()
-    d.enable()
-    e.enable()
+    pump_0.enable()
+    pump_1.enable()
+    pump_2.enable()
+    pump_3.enable()
        
-    b.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-    c.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-    d.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
-    e.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
+    pump_0.set_flow_unit(prefix="milli", volume_unit="litres",
+                         time_unit="per_second")
+    pump_1.set_flow_unit(prefix="milli", volume_unit="litres",
+                         time_unit="per_second")
+    pump_2.set_flow_unit(prefix="milli", volume_unit="litres",
+                         time_unit="per_second")
+    pump_3.set_flow_unit(prefix="milli", volume_unit="litres",
+                         time_unit="per_second")
     
-    b.set_volume_unit(prefix="milli", unit="litres")
-    c.set_volume_unit(prefix="milli", unit="litres")
-    d.set_volume_unit(prefix="milli", unit="litres")
-    e.set_volume_unit(prefix="milli", unit="litres")
+    pump_0.set_volume_unit(prefix="milli", unit="litres")
+    pump_1.set_volume_unit(prefix="milli", unit="litres")
+    pump_2.set_volume_unit(prefix="milli", unit="litres")
+    pump_3.set_volume_unit(prefix="milli", unit="litres")
     
-    b.set_syringe_param()
-    c.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-    d.set_syringe_param()
-    e.set_syringe_param()
+    pump_0.set_syringe_param()
+    pump_1.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    pump_2.set_syringe_param()
+    pump_3.set_syringe_param()
     
     ch0 = QmixDigitalIO(index=0)
     ch1 = QmixDigitalIO(index=1)
@@ -1234,11 +1183,7 @@ if __name__ == '__main__':
     ch6 = QmixDigitalIO(index=6)
     ch7 = QmixDigitalIO(index=7)
 
-  #%% CALIBRATE
-    b.calibrate(blocking_wait=False)
-    c.calibrate(blocking_wait=False)
-    d.calibrate(blocking_wait=False)
-    e.calibrate(blocking_wait=False)    
-    
-
-
+    pump_0.calibrate(blocking_wait=False)
+    pump_1.calibrate(blocking_wait=False)
+    pump_2.calibrate(blocking_wait=False)
+    pump_3.calibrate(blocking_wait=False)
