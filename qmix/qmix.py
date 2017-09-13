@@ -12,7 +12,7 @@ if sys.version_info[0] < 3:
     from builtins import bytes
 
 
-dll_dir = None
+DLL_DIR = None
 
 
 def CHK(return_code, *args):
@@ -77,9 +77,11 @@ class QmixBus(object):
         Absolute path to the folder that contains Qmix .dll files.
         
     """     
-    def __init__(self, config_dir):
-        
-        self.dll_dir = dll_dir            
+    def __init__(self, config_dir, dll_dir):
+        global DLL_DIR
+        DLL_DIR = dll_dir
+
+        self.dll_dir = dll_dir
         self.dll_file = os.path.join(self.dll_dir,
                                      'labbCAN_Bus_API.dll')
         self.config_dir = config_dir        
@@ -209,7 +211,7 @@ class QmixPump(object):
         
     """
     def __init__(self, index=0, name='', external_valves=None):
-        self.dll_dir = dll_dir               
+        self.dll_dir = DLL_DIR
         self.dll_file = os.path.join(self.dll_dir,
                                      'labbCAN_Pump_API.dll')
         
@@ -705,7 +707,7 @@ class QmixValve(object):
         
     """    
     def __init__(self, index=0, handle=None, name=''):
-        self.dll_dir = dll_dir            
+        self.dll_dir = DLL_DIR
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_Valve_API.dll')
     
@@ -837,7 +839,7 @@ class QmixDigitalIO(object):
     """     
     def __init__(self, index=0, name=''):
 
-        self.dll_dir = dll_dir            
+        self.dll_dir = DLL_DIR
         self.dll_file = os.path.join(self.dll_dir,
                                  'labbCAN_DigIO_API.dll')
         self._ffi = FFI()
@@ -1111,7 +1113,7 @@ ERROR_HEADER = """
 class _QmixError(object):
     def __init__(self, error_number):
         
-        self.dll_dir = dll_dir
+        self.dll_dir = DLL_DIR
         self.dll_file = os.path.join(self.dll_dir,
                                  'usl.dll')
         self._ffi = FFI()
