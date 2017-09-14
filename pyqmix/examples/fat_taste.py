@@ -169,8 +169,11 @@ def run_trial(trial, fixation, ratingScale):
  
 #%% PUMPS INITIALIZATION
 if __name__ == '__main__':
-    qmix_bus = pyqmix.QmixBus(config_dir='C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix',
-                            dll_dir = 'C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
+    
+    dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
+    config_dir = os.path.normpath('C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix')
+
+    qmix_bus = pyqmix.QmixBus(config_dir=config_dir, dll_dir=dll_dir)
     qmix_bus.open()
     qmix_bus.start()
     
