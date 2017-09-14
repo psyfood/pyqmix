@@ -11,41 +11,41 @@ from win32api import GetSystemMetrics
 import numpy as np
 import os
 from psychopy import core, data, event, gui, visual 
-import qmix
+import pyqmix
 import pandas as pd
 from pphelper.hardware import Trigger, Olfactometer
 
 #%% INITIALIZE NEMESYS
-qmix.dll_dir = 'C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK'
-qmix_bus = qmix.QmixBus(config_dir='C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix')
+qmix_bus = pyqmix.QmixBus(config_dir='C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix',
+                        dll_dir = 'C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
 qmix_bus.open()
 qmix_bus.start()
 
-pump_1 = qmix.QmixPump(index=0)
+pump_1 = pyqmix.QmixPump(index=0)
 pump_1.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_1.set_volume_unit(prefix="milli", unit="litres")
 pump_1.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
 pump_1.calibrate(blocking_wait=False)
 
-pump_2 = qmix.QmixPump(index=1)
+pump_2 = pyqmix.QmixPump(index=1)
 pump_2.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_2.set_volume_unit(prefix="milli", unit="litres")
 pump_2.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
 pump_2.calibrate(blocking_wait=False)
 
-pump_3 = qmix.QmixPump(index=2)
+pump_3 = pyqmix.QmixPump(index=2)
 pump_3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_3.set_volume_unit(prefix="milli", unit="litres")
 pump_3.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
 pump_3.calibrate(blocking_wait=False)
 
-pump_5 = qmix.QmixPump(index=4)
+pump_5 = pyqmix.QmixPump(index=4)
 pump_5.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_5.set_volume_unit(prefix="milli", unit="litres")
 pump_5.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
 pump_5.calibrate(blocking_wait=False)
 
-pump_6 = qmix.QmixPump(index=5)
+pump_6 = pyqmix.QmixPump(index=5)
 pump_6.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_6.set_volume_unit(prefix="milli", unit="litres")
 pump_6.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
