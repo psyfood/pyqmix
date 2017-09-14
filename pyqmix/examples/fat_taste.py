@@ -9,7 +9,7 @@ from win32api import GetSystemMetrics
 import numpy as np
 import os
 from psychopy import core, data, event, gui, visual 
-import qmix
+import pyqmix
 import pandas as pd
 from pphelper.hardware import Trigger
 
@@ -169,16 +169,19 @@ def run_trial(trial, fixation, ratingScale):
  
 #%% PUMPS INITIALIZATION
 if __name__ == '__main__':
-    qmix.dll_dir = 'C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK'
-    qmix_bus = qmix.QmixBus(config_dir='C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix')
+    
+    dll_dir = os.path.normpath('C:\\Users\\758099.INTERN\\AppData\\Local\\QmixSDK')
+    config_dir = os.path.normpath('C:\\Users\\758099.INTERN\\Desktop\\neMESYS\\config_qmix')
+
+    qmix_bus = pyqmix.QmixBus(config_dir=config_dir, dll_dir=dll_dir)
     qmix_bus.open()
     qmix_bus.start()
     
-    pump_2 = qmix.QmixPump(index=1)
-    pump_3 = qmix.QmixPump(index=2)
-    pump_4 = qmix.QmixPump(index=3)
-    pump_5 = qmix.QmixPump(index=4)
-    pump_6 = qmix.QmixPump(index=5)
+    pump_2 = pyqmix.QmixPump(index=1)
+    pump_3 = pyqmix.QmixPump(index=2)
+    pump_4 = pyqmix.QmixPump(index=3)
+    pump_5 = pyqmix.QmixPump(index=4)
+    pump_6 = pyqmix.QmixPump(index=5)
     pump_2.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
     pump_3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
     pump_4.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
