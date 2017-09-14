@@ -14,10 +14,10 @@ except ImportError:
 
 # Ger version info.
 # This basically imports __version__ from version.py.
-exec(open('qmix/version.py').read())
+exec(open('pyqmix/version.py').read())
 
 setup(
-    name='qmix',
+    name='pyqmix',
     version=__version__,
     author='Lorenzo Alfine <lorenzo.alfine@gmail.com>, Richard Höchenberger <richard.hoechenberger@gmail.com>',
     url='https://github.com/psyfood/Gustometer',

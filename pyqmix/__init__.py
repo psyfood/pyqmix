@@ -5,6 +5,6 @@
 from __future__ import print_function, unicode_literals
 from .version import __version__
 
-from .qmix import QmixBus, QmixPump, QmixValve, QmixExternalValve
+from .pyqmix import QmixBus, QmixPump, QmixValve, QmixExternalValve
 
 __all__ = [QmixBus, QmixPump, QmixValve, QmixExternalValve]
