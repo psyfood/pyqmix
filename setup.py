@@ -1,9 +1,6 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 29 14:42:48 2017
 
-@author: alfine-l
-"""
 
 import sys
 
@@ -12,14 +9,15 @@ try:
 except ImportError:
     raise sys.exit('Could not import setuptools.')
 
-# Ger version info.
+# Get version info.
 # This basically imports __version__ from version.py.
 exec(open('pyqmix/version.py').read())
 
 setup(
     name='pyqmix',
     version=__version__,
-    author='Lorenzo Alfine <lorenzo.alfine@gmail.com>, Richard Höchenberger <richard.hoechenberger@gmail.com>',
+    author=('Lorenzo Alfine <lorenzo.alfine@gmail.com>,'
+            'Richard HÃ¶chenberger <richard.hoechenberger@gmail.com>'),
     url='https://github.com/psyfood/Gustometer',
     packages=find_packages(),
     license='GPL v3',

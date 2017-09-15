@@ -11,55 +11,55 @@ BUS_HEADER = """
  """
 
 PUMP_HEADER = """
-                     #define LITRES 68 //!< LITRES
-                     #define UNIT   0 //!< use base unit
-                     #define DECI  -1 //!< DECI
-                     #define CENTI -2 //!< CENTI
-                     #define MILLI -3 //!< MILLI
-                     #define MICRO -6 //!< MICRO
-                     #define PER_SECOND    1 //!< PER_SECOND
-                     #define PER_MINUTE   60 //!< PER_MINUTE
-                     #define PER_HOUR   3600 //!< PER_HOUR
-
-                     typedef long long dev_hdl;
-                     long LCP_GetNoOfPumps();
-                     long LCP_GetPumpHandle(unsigned char Index, dev_hdl* PumpHandle);
-                     long LCP_LookupPumpByName(const char *pPumpName, dev_hdl* PumpHandle);
-                     long LCP_IsEnabled(dev_hdl hPump);
-                     long LCP_Enable(dev_hdl hPump);
-                     long LCP_SyringePumpCalibrate(dev_hdl 	hPump);
-                     long LCP_IsCalibrationFinished(dev_hdl hPump);
-                     long LCP_IsInFaultState(dev_hdl hPump);  
-                     long LCP_ClearFault(dev_hdl hPump);
-                     long LCP_SetVolumeUnit(dev_hdl hPump,
-                                                  int    Prefix,
-                                                  int     VolumeUnit);
-                     long LCP_SetFlowUnit(dev_hdl hPump,
-                                                int    Prefix,
-                                                int     VolumeUnit,
-                                                int     TimeUnit);
-                     long LCP_SetSyringeParam(dev_hdl hPump,
-                                                    double  InnerDiameter_mm,
-                                                    double  MaxPistonStroke_mm);
-                     long LCP_Aspirate(dev_hdl hPump, double Volume, double Flow);
-                     long LCP_Dispense(dev_hdl hPump, double Volume, double Flow);
-                     long LCP_PumpVolume(dev_hdl hPump, double Volume, double Flow);
-                     long LCP_SetFillLevel(dev_hdl hPump,
-        	                                     double  Level,
-        	                                     double  Flow);
-                     long LCP_GenerateFlow(dev_hdl hPump, double FlowRate);
-                     long LCP_GetDosedVolume(dev_hdl hPump, double *pDosedVolume);
-                     long LCP_GetFillLevel(dev_hdl hPump, double* pFillLevel);
-                     long LCP_GetFlowIs(dev_hdl hPump, double *pFlowRateIs);
-                     long LCP_IsPumping(dev_hdl hPump);
-                     long LCP_GetFlowRateMax(dev_hdl hPump, double* FlowRateMax);
-                     long LCP_StopPumping(dev_hdl hPump);
-                     long LCP_StopAllPumps();
-                     long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
-                     long LCP_HasValve(dev_hdl hPump);
-                     long LCP_GetDrivePosCnt(dev_hdl hPump, long *pPosCntValue);
-                     long LCP_RestoreDrivePosCnt(dev_hdl hPump, long PosCntValue);
-                     """
+    #define LITRES 68 //!< LITRES
+    #define UNIT   0 //!< use base unit
+    #define DECI  -1 //!< DECI
+    #define CENTI -2 //!< CENTI
+    #define MILLI -3 //!< MILLI
+    #define MICRO -6 //!< MICRO
+    #define PER_SECOND    1 //!< PER_SECOND
+    #define PER_MINUTE   60 //!< PER_MINUTE
+    #define PER_HOUR   3600 //!< PER_HOUR
+    
+    typedef long long dev_hdl;
+    long LCP_GetNoOfPumps();
+    long LCP_GetPumpHandle(unsigned char Index, dev_hdl* PumpHandle);
+    long LCP_LookupPumpByName(const char *pPumpName, dev_hdl* PumpHandle);
+    long LCP_IsEnabled(dev_hdl hPump);
+    long LCP_Enable(dev_hdl hPump);
+    long LCP_SyringePumpCalibrate(dev_hdl 	hPump);
+    long LCP_IsCalibrationFinished(dev_hdl hPump);
+    long LCP_IsInFaultState(dev_hdl hPump);  
+    long LCP_ClearFault(dev_hdl hPump);
+    long LCP_SetVolumeUnit(dev_hdl hPump,
+                              int    Prefix,
+                              int     VolumeUnit);
+    long LCP_SetFlowUnit(dev_hdl hPump,
+                            int    Prefix,
+                            int     VolumeUnit,
+                            int     TimeUnit);
+    long LCP_SetSyringeParam(dev_hdl hPump,
+                                double  InnerDiameter_mm,
+                                double  MaxPistonStroke_mm);
+    long LCP_Aspirate(dev_hdl hPump, double Volume, double Flow);
+    long LCP_Dispense(dev_hdl hPump, double Volume, double Flow);
+    long LCP_PumpVolume(dev_hdl hPump, double Volume, double Flow);
+    long LCP_SetFillLevel(dev_hdl hPump,
+                             double  Level,
+                             double  Flow);
+    long LCP_GenerateFlow(dev_hdl hPump, double FlowRate);
+    long LCP_GetDosedVolume(dev_hdl hPump, double *pDosedVolume);
+    long LCP_GetFillLevel(dev_hdl hPump, double* pFillLevel);
+    long LCP_GetFlowIs(dev_hdl hPump, double *pFlowRateIs);
+    long LCP_IsPumping(dev_hdl hPump);
+    long LCP_GetFlowRateMax(dev_hdl hPump, double* FlowRateMax);
+    long LCP_StopPumping(dev_hdl hPump);
+    long LCP_StopAllPumps();
+    long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
+    long LCP_HasValve(dev_hdl hPump);
+    long LCP_GetDrivePosCnt(dev_hdl hPump, long *pPosCntValue);
+    long LCP_RestoreDrivePosCnt(dev_hdl hPump, long PosCntValue);
+ """
 
 VALVE_HEADER = """
     typedef long long dev_hdl;
@@ -72,7 +72,6 @@ VALVE_HEADER = """
     long LCV_ActualValvePosition(dev_hdl hValve);
     long LCV_SwitchValveToPosition(dev_hdl hValve,
         int LogicalValvePosition);
-
  """
 
 DIGITAL_IO_HEADER = """
@@ -86,7 +85,6 @@ DIGITAL_IO_HEADER = """
                                             int StringBufSize);
     long LCDIO_LookupIoDeviceByName(const char *pName,
                                     dev_hdl *pIoDeviceHdl);
-
  """
 
 ERROR_HEADER = """
