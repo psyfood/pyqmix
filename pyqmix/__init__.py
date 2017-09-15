@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
-    Gustometer based on neMESYS system.
+Gustometer based on neMESYS system.
 """
 from __future__ import print_function, unicode_literals
 from .version import __version__
