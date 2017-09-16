@@ -151,8 +151,7 @@ class QmixPump(object):
         
     """
     def __init__(self, index=0, name='', external_valves=None):
-        self.dll_dir = DLL_DIR
-        self.dll_file = os.path.join(self.dll_dir, 'labbCAN_Pump_API.dll')
+        self.dll_file = os.path.join(DLL_DIR, 'labbCAN_Pump_API.dll')
         
         self._ffi = FFI()
         self._ffi.cdef(PUMP_HEADER)                                          
@@ -633,8 +632,7 @@ class QmixValve(object):
         
     """    
     def __init__(self, index=0, handle=None, name=''):
-        self.dll_dir = DLL_DIR
-        self.dll_file = os.path.join(self.dll_dir, 'labbCAN_Valve_API.dll')
+        self.dll_file = os.path.join(DLL_DIR, 'labbCAN_Valve_API.dll')
     
         self._ffi = FFI()
         self._ffi.cdef(VALVE_HEADER)                                          
@@ -749,8 +747,7 @@ class QmixDigitalIO(object):
     """     
     def __init__(self, index=0, name=''):
 
-        self.dll_dir = DLL_DIR
-        self.dll_file = os.path.join(self.dll_dir, 'labbCAN_DigIO_API.dll')
+        self.dll_file = os.path.join(DLL_DIR, 'labbCAN_DigIO_API.dll')
         self._ffi = FFI()
         self._ffi.cdef(DIGITAL_IO_HEADER)
                                           
@@ -802,9 +799,7 @@ class QmixDigitalIO(object):
 
 class _QmixError(object):
     def __init__(self, error_number):
-        
-        self.dll_dir = DLL_DIR
-        self.dll_file = os.path.join(self.dll_dir, 'usl.dll')
+        self.dll_file = os.path.join(DLL_DIR, 'usl.dll')
         self._ffi = FFI()
         self._ffi.cdef(ERROR_HEADER)
                                           
