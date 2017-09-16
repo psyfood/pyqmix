@@ -720,18 +720,34 @@ class QmixValve(object):
         """         
         return self._call('LCV_ActualValvePosition', self._handle[0])
     
-    def switch_position(self, position=0):
+    def switch_position(self, position=None):
         """
         Switch the valve to a certain logical valve position.
 
         Parameters
-        ---------- 
-        position : int
-            Logical valve target position index.
+        ----------
+        position : int, or None
+            Switch the valve to the specified position.
+            If `None` and a valve with two possible positions is connected,
+            switch from the current position to the other one.
 
-        """        
-        self._call('LCV_SwitchValveToPosition', self._handle[0], position)
-        
+        """
+        if position is None and self.number_of_positions != 2:
+            msg = ('For valves with more than 2 positions, please specify the '
+                   'desired target position.')
+            raise ValueError(msg)
+
+        if position is None:
+            if self.current_position == 0:
+                target_position = 1
+            else:
+                target_position = 0
+        else:
+            target_position = position
+
+        self._call('LCV_SwitchValveToPosition', self._handle[0],
+                   target_position)
+
 
 class QmixExternalValve(QmixValve):
     """
@@ -763,18 +779,37 @@ class QmixExternalValve(QmixValve):
         self.aspirate_pos = 0
         self.dispense_pos = 1
 
-    def switch_position(self, position=0):
-        self._dio.write(position)
-        
+    def switch_position(self, position=None):
+        """
+        Switch the valve to a certain logical valve position.
+
+        Parameters
+        ----------
+        position : int, or None
+            Switch the valve to the specified position.
+            If `None` and a valve with two possible positions is connected,
+            switch from the current position to the other one.
+
+        """
+        if position is None:
+            if self.current_position == 0:
+                target_position = 1
+            else:
+                target_position = 0
+        else:
+            target_position = position
+
+        self._dio.write(target_position)
+
     @property
     def current_position(self):        
         r = self._dio.is_output_on
+
         if r:
-            r = 1
+            return 1
         else:
-            r = 0
-        return r
-        
+            return 0
+
     @property
     def number_of_positions(self):
         return 2
@@ -796,7 +831,7 @@ class QmixDigitalIO(object):
         not `None`.
 
     """     
-    def __init__(self, index=0, name=''):
+    def __init__(self, index=None, name=''):
         if index is None and name == '':
             raise ValueError('Please specify a valid DIO index or name.')
         else:
