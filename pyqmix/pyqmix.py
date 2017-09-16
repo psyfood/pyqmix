@@ -764,7 +764,7 @@ class QmixExternalValve(QmixValve):
         self.dispense_pos = 1
 
     def switch_position(self, position=0):
-        self._dio.write_on(position)
+        self._dio.write(position)
         
     @property
     def current_position(self):        
@@ -839,7 +839,7 @@ class QmixDigitalIO(object):
         r = self._call('LCDIO_IsOutputOn', self._handle[0])
         return bool(r)
     
-    def write_on(self, state):
+    def write(self, state):
         """
         Swicth digital output channel on/off.
 
