@@ -145,12 +145,23 @@ class QmixPump(object):
 
     Parameters
     ----------        
-    index : int
+    index : int, or None
         Index of the pump to access. It is related with the config files.
-        First pump has ``index = 0``, second has ``index = 1`` and so on.
+        First pump has ``index=0``, second has ``index=1`` and so on.
+        Takes precedence over the `name` parameter.
+
+    name : str
+        The name of the pump to initialize. Will be ignored if `index` is
+        not `None`.
         
     """
-    def __init__(self, index=0, name='', external_valves=None):
+    def __init__(self, index=None, name='', external_valves=None):
+        if index is None and name == '':
+            raise ValueError('Please specify a valid pump index or name')
+        else:
+            self.index = index
+            self.name = name
+
         self.dll_file = os.path.join(DLL_DIR, 'labbCAN_Pump_API.dll')
         
         self._ffi = FFI()
@@ -158,7 +169,13 @@ class QmixPump(object):
         self._dll = self._ffi.dlopen(self.dll_file)
         
         self._handle = self._ffi.new('dev_hdl *', 0)
-        self._call('LCP_GetPumpHandle', index, self._handle)        
+
+        if self.index is not None:
+            self._call('LCP_GetPumpHandle', self.index, self._handle)
+        else:
+            self._call('LCP_LookupPumpByName',
+                       bytes(self.name, 'utf8'),
+                       self._handle)
 
         self._flow_rate_max = self._ffi.new('double *')       
         self._p_fill_level = self._ffi.new('double *')
@@ -622,28 +639,41 @@ class QmixValve(object):
 
     Parameters
     ----------
-    index : int
-        Index of the valve to istantiate. If a ``handle`` is passed, this
-        parameter will be ignored.
-        
-    handle :  dev_hdl
-        Used when initializing a ``QmixPump`` object. It is not used if an
-        ``index`` parameter is passed.
-        
-    """    
-    def __init__(self, index=0, handle=None, name=''):
+    index : int, or None
+        Index of the valve to initialize. Takes precedence over the
+        `name` and `handle` parameters.
+
+    name : str
+        The name of the valve to initialize. Will be ignored if `index` is
+        not `None`. Takes precedence over the `handle` parameter.
+
+    handle :  Qmix valve handle, or None
+        A Qmix valve device handle, as returned by
+        :func:~`pyqmix.QmixPump.valve_handle`.
+
+    """
+    def __init__(self, index=None, name='', handle=None):
+        if index is None and name == '' and handle is None:
+            raise ValueError('Please specify a valid valve index or name.')
+        else:
+            self.index = index
+            self.name = name
+            self.handle = handle
+
         self.dll_file = os.path.join(DLL_DIR, 'labbCAN_Valve_API.dll')
     
         self._ffi = FFI()
         self._ffi.cdef(VALVE_HEADER)                                          
         self._dll = self._ffi.dlopen(self.dll_file)
-        
-        if handle is None:
-            self.index = index
+
+        if self.index is not None:
             self._handle = self._ffi.new('dev_hdl *', 0)
             self._call('LCV_GetValveHandle', self.index, self._handle)
+        elif self.name != '':
+            self._call('LCV_LookupValveByName',
+                       bytes(self.name, 'utf8'),
+                       self._handle)
         else:
-            self.index = None
             self._handle = handle
             
         self.aspirate_pos = 0
@@ -707,16 +737,32 @@ class QmixExternalValve(QmixValve):
     """
     An external valve, controlled by Qmix I/O-B.
 
+    Parameters
+    ----------
+    index : int, or None
+        Index of the DIO channel to istantiate. Takes precedence over the
+        `name` parameter.
+
+    name : str
+        The name of the DIO channel to initialize. Will be ignored if `index` is
+        not `None`.
+
     """    
-    def __init__(self, index=0, name=''):
-        self.index = index
-        self._dio = QmixDigitalIO(index=self.index)
+    def __init__(self, index=None, name=''):
+        if index is None and name == '':
+            raise ValueError('Please specify a valid DIO index or name')
+        else:
+            self.index = index
+            self.name = name
+
+        if self.index is not None:
+            self._dio = QmixDigitalIO(index=self.index)
+        else:
+            self._dio = QmixDigitalIO(name=self.name)
         
         self.aspirate_pos = 0
         self.dispense_pos = 1
-        
-        self.name = name
-        
+
     def switch_position(self, position=0):
         self._dio.write_on(position)
         
@@ -741,11 +787,21 @@ class QmixDigitalIO(object):
     Parameters
     ----------
     index : int
-        Index of the digital channel. It is related with the config files.
+        Index of the DIO channel. It is related with the config files.
         First channel has ``index=0``, second has ``index=1`` and so on.
-                
+        Takes precedence over the `name` parameter.
+
+    name : str
+        The name of the DIO channel to initialize. Will be ignored if `index` is
+        not `None`.
+
     """     
     def __init__(self, index=0, name=''):
+        if index is None and name == '':
+            raise ValueError('Please specify a valid DIO index or name.')
+        else:
+            self.index = index
+            self.name = name
 
         self.dll_file = os.path.join(DLL_DIR, 'labbCAN_DigIO_API.dll')
         self._ffi = FFI()
@@ -754,14 +810,13 @@ class QmixDigitalIO(object):
         self._dll = self._ffi.dlopen(self.dll_file)
         
         self._handle = self._ffi.new('dev_hdl *', 0)
-        
-        self._ch_name = 'QmixIO_B_1_DO'
-        self._channel = self._ch_name + str(index) 
-        self._call('LCDIO_LookupOutChanByName',
-                   bytes(self._channel, 'utf8'),
-                   self._handle)
-        
-        self.name = name
+
+        if self.index is not None:
+            self._call('LCDIO_GetOutChanHandle', self.index, self._handle)
+        else:
+            self._call('LCDIO_LookupOutChanByName',
+                       bytes(self.name, 'utf8'),
+                       self._handle)
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
