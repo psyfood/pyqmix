@@ -8,7 +8,7 @@ Welcome to pphelper's documentation!
 .. Contents:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    about
    interface

@@ -1,3 +1,6 @@
+Interfaces
+==========
+
 .. currentmodule:: pyqmix.interface
 .. autosummary::
    :nosignatures:
