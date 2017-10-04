@@ -1,7 +1,7 @@
 Interfaces
 ==========
 
-.. currentmodule:: pyqmix.interface
+.. currentmodule:: pyqmix
 .. autosummary::
    :nosignatures:
 
@@ -13,20 +13,20 @@ Interfaces
 
 QmixBus
 -------
-.. autoclass:: pyqmix.interface.QmixBus
+.. autoclass:: pyqmix.bus.QmixBus
 
 QmixPump
 --------
-.. autoclass:: pyqmix.interface.QmixPump
+.. autoclass:: pyqmix.pump.QmixPump
 
 QmixValve
 ---------
-.. autoclass:: pyqmix.interface.QmixValve
+.. autoclass:: pyqmix.valve.QmixValve
 
 QmixExternalValve
 -----------------
-.. autoclass:: pyqmix.interface.QmixExternalValve
+.. autoclass:: pyqmix.valve.QmixExternalValve
 
 QmixDigitalIO
 -------------
-.. autoclass:: pyqmix.interface.QmixDigitalIO
+.. autoclass:: pyqmix.dio.QmixDigitalIO
