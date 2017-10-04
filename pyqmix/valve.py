@@ -178,6 +178,19 @@ class QmixExternalValve(QmixValve):
 
     @property
     def position(self):
+        """
+        The current logical valve position.
+
+        Each valve position is identified by a logical valve position identifier
+        from 0 to number of valve positions - 1. This function returns the
+        logical valve position identifier for the current valve position.
+
+        Returns
+        -------
+        int
+           >=0 current valve position index.
+
+        """
         r = self._dio.is_output_on
 
         if r:
