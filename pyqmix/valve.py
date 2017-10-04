@@ -87,9 +87,9 @@ class QmixValve(object):
         return self._call('LCV_NumberOfValvePositions', self._handle[0])
 
     @property
-    def current_position(self):
+    def position(self):
         """
-        Return the current logical valve position.
+        The current logical valve position.
 
         Each valve position is identified by a logical valve position identifier
         from 0 to number of valve positions - 1. This function returns the
@@ -102,6 +102,10 @@ class QmixValve(object):
 
         """
         return self._call('LCV_ActualValvePosition', self._handle[0])
+
+    @position.setter
+    def position(self, position):
+        self.switch_position(position)
 
     def switch_position(self, position=None):
         """
@@ -121,12 +125,17 @@ class QmixValve(object):
             raise ValueError(msg)
 
         if position is None:
-            if self.current_position == 0:
+            if self.position == 0:
                 target_position = 1
             else:
                 target_position = 0
         else:
             target_position = position
+
+        if (position < 0) or (position >= self.number_of_positions):
+            msg = ('Must specify position in the range [0, %i] for this valve.'
+                   % (self.number_of_positions - 1))
+            raise ValueError(msg)
 
         self._call('LCV_SwitchValveToPosition', self._handle[0],
                    target_position)
@@ -163,6 +172,23 @@ class QmixExternalValve(QmixValve):
         self.aspirate_pos = 0
         self.dispense_pos = 1
 
+    @property
+    def number_of_positions(self):
+        return 2
+
+    @property
+    def position(self):
+        r = self._dio.is_output_on
+
+        if r:
+            return 1
+        else:
+            return 0
+
+    @position.setter
+    def position(self, position):
+        self.switch_position(position)
+
     def switch_position(self, position=None):
         """
         Switch the valve to a certain logical valve position.
@@ -176,24 +202,16 @@ class QmixExternalValve(QmixValve):
 
         """
         if position is None:
-            if self.current_position == 0:
+            if self.position == 0:
                 target_position = 1
             else:
                 target_position = 0
         else:
             target_position = position
 
+        if (position < 0) or (position >= self.number_of_positions):
+            msg = ('Must specify position in the range [0, %i] for this valve.'
+                   % (self.number_of_positions - 1))
+            raise ValueError(msg)
+
         self._dio.write(target_position)
-
-    @property
-    def current_position(self):
-        r = self._dio.is_output_on
-
-        if r:
-            return 1
-        else:
-            return 0
-
-    @property
-    def number_of_positions(self):
-        return 2
