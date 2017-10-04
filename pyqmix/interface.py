@@ -551,14 +551,23 @@ class QmixPump(object):
         """          
         self._call('LCP_GetDosedVolume', self._handle[0], self._p_dosed_volume)
         return self._p_dosed_volume[0]
+
+    @property
+    def fill_level(self):
+        """
+        Returns the current fill level of the pump.
+
+        Notes
+        -----
+        This is identical to a call to :func:~`pyqmix.QmixPump.get_fill_level`.
+        """
+
+        return self.get_fill_level()
     
     def get_fill_level(self):
         """
         Returns the current fill level of the pump.
 
-        Parameters
-        ----------            
-                        
         Returns
         -------
         float
