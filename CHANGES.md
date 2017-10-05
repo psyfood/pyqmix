@@ -1,3 +1,7 @@
+2017-10-05
+----------
+* Add `config.py` module
+
 2017-10-04
 ----------
 * Add valve `position` setter. The new property replaces the `current_position`

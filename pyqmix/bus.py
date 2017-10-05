@@ -10,10 +10,9 @@ if sys.version_info[0] < 3:
     # Python 2 compatibility; requires `future` package.
     from builtins import bytes
 
+from . import config
 from .tools import CHK
 from .headers import BUS_HEADER
-
-DLL_DIR = None
 
 
 class QmixBus(object):
@@ -33,13 +32,24 @@ class QmixBus(object):
 
     """
 
-    def __init__(self, config_dir, dll_dir):
-        global DLL_DIR
-        DLL_DIR = dll_dir
+    def __init__(self, config_dir=None, dll_dir=None):
+        if config.DLL_DIR is None:
+            if dll_dir is None:
+                raise ValueError('No DLL directory specified.')
+            else:
+                config.DLL_DIR = dll_dir
 
-        self.dll_dir = dll_dir
+        self.dll_dir = config.DLL_DIR
         self.dll_file = os.path.join(self.dll_dir, 'labbCAN_Bus_API.dll')
-        self.config_dir = config_dir
+
+        if config.CONFIG_DIR is None:
+            if config_dir is None:
+                raise ValueError('No Qmix configuration directory specified.')
+            else:
+                config.CONFIG_DIR = config_dir
+
+        self.config_dir = config.CONFIG_DIR
+
         self._ffi = FFI()
         self._ffi.cdef(BUS_HEADER)
         self._dll = self._ffi.dlopen(self.dll_file)
