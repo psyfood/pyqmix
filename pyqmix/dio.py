@@ -10,7 +10,7 @@ if sys.version_info[0] < 3:
     from builtins import bytes
 
 from .tools import CHK
-from .bus import DLL_DIR
+from .config import DLL_DIR
 from .headers import DIGITAL_IO_HEADER
 
 

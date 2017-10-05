@@ -10,10 +10,10 @@ if sys.version_info[0] < 3:
     # Python 2 compatibility; requires `future` package.
     from builtins import bytes
 
-from .bus import DLL_DIR
-from .tools import CHK
-from .headers import PUMP_HEADER
 from .valve import QmixValve
+from .tools import CHK
+from .config import DLL_DIR
+from .headers import PUMP_HEADER
 
 
 class QmixPump(object):
