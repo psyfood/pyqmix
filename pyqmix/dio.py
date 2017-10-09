@@ -10,8 +10,8 @@ if sys.version_info[0] < 3:
     from builtins import bytes
 
 from .tools import CHK
-from .config import DLL_DIR
 from .headers import DIGITAL_IO_HEADER
+from . import config
 
 
 class QmixDigitalIO(object):
@@ -38,7 +38,7 @@ class QmixDigitalIO(object):
             self.index = index
             self.name = name
 
-        self.dll_file = os.path.join(DLL_DIR, 'labbCAN_DigIO_API.dll')
+        self.dll_file = os.path.join(config.DLL_DIR, 'labbCAN_DigIO_API.dll')
         self._ffi = FFI()
         self._ffi.cdef(DIGITAL_IO_HEADER)
 
