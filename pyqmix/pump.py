@@ -519,3 +519,28 @@ class QmixPump(object):
 
     def remove_external_valve(self, name):
         del self.ext_valves[name]
+
+
+def init_pump(params):
+    """Convenience function to initialize and calibrate a pump.
+
+    Parameters
+    ----------
+    params : dict
+        A dictionary with the following keys: `index`, `flow`, `volume`,
+        `syringe`.
+
+    Returns
+    -------
+    Readily initialized and calibrated class:~`pyqmix.QmixPump` instance.
+
+    TODO: Improve documentation.
+
+    """
+    pump = QmixPump(index=params['index'])
+    pump.set_flow_unit(**params['flow'])
+    pump.set_volume_unit(**params['volume'])
+    pump.set_syringe_param(**params['syringe'])
+    pump.calibrate(blocking_wait=False)
+
+    return pump

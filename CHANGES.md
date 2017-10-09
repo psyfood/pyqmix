@@ -2,7 +2,7 @@
 ----------
 * Convert `config.py` module to sub-package
 * Add pump configurations to the new `config.pumps` module 
-
+* Add `pump.init_pump()` convenience function for pump setup
 
 2017-10-05
 ----------
