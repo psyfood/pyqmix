@@ -544,3 +544,44 @@ def init_pump(params):
     pump.calibrate(blocking_wait=False)
 
     return pump
+
+
+def fill_syringes(pumps, volume=None, flow_rate=1):
+    """
+    Fill syringes.
+
+    Parameters:
+    -----------
+    pumps : list of class:~`pyqmix.QmixPump` instances
+
+    """
+    flow_rate = abs(flow_rate)
+
+    if volume is None:
+        flow_rate *= -1
+        [p.generate_flow(flow_rate=flow_rate) for p in pumps]
+    else:
+        [p.aspirate(volume=volume, flow_rate=flow_rate) for p in pumps]
+
+    while any([p.is_pumping for p in pumps]):
+        time.sleep(0.0005)
+
+
+def empty_syringes(pumps, volume=None, flow_rate=1):
+    """
+    Empty syringes.
+
+    Parameters:
+    -----------
+    pumps : list of class:~`pyqmix.QmixPump` instances
+
+    """
+    flow_rate = abs(flow_rate)
+
+    if volume is None:
+        [p.generate_flow(flow_rate=flow_rate) for p in pumps]
+    else:
+        [p.dispense(volume=volume, flow_rate=flow_rate) for p in pumps]
+
+    while any([p.is_pumping for p in pumps]):
+        time.sleep(0.0005)
