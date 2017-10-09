@@ -4,13 +4,13 @@
 import os
 from cffi import FFI
 
-from .config import DLL_DIR
+from . import config
 from .headers import ERROR_HEADER
 
 
 class QmixError(object):
     def __init__(self, error_number):
-        self.dll_file = os.path.join(DLL_DIR, 'usl.dll')
+        self.dll_file = os.path.join(config.DLL_DIR, 'usl.dll')
         self._ffi = FFI()
         self._ffi.cdef(ERROR_HEADER)
 
