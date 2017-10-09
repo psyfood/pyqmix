@@ -12,8 +12,8 @@ if sys.version_info[0] < 3:
 
 from .valve import QmixValve
 from .tools import CHK
-from .config import DLL_DIR
 from .headers import PUMP_HEADER
+from . import config
 
 
 class QmixPump(object):
@@ -40,7 +40,7 @@ class QmixPump(object):
             self.index = index
             self.name = name
 
-        self.dll_file = os.path.join(DLL_DIR, 'labbCAN_Pump_API.dll')
+        self.dll_file = os.path.join(config.DLL_DIR, 'labbCAN_Pump_API.dll')
 
         self._ffi = FFI()
         self._ffi.cdef(PUMP_HEADER)

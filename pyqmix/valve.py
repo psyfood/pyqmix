@@ -11,8 +11,8 @@ if sys.version_info[0] < 3:
 
 from .dio import QmixDigitalIO
 from .tools import CHK
-from .config import DLL_DIR
 from .headers import VALVE_HEADER
+from . import config
 
 
 class QmixValve(object):
@@ -43,7 +43,7 @@ class QmixValve(object):
             self.name = name
             self.handle = handle
 
-        self.dll_file = os.path.join(DLL_DIR, 'labbCAN_Valve_API.dll')
+        self.dll_file = os.path.join(config.DLL_DIR, 'labbCAN_Valve_API.dll')
 
         self._ffi = FFI()
         self._ffi.cdef(VALVE_HEADER)
