@@ -9,9 +9,9 @@ if sys.version_info[0] < 3:
     # Python 2 compatibility; requires `future` package.
     from builtins import bytes
 
+from . import config
 from .tools import CHK
 from .headers import DIGITAL_IO_HEADER
-from . import config
 
 
 class QmixDigitalIO(object):
