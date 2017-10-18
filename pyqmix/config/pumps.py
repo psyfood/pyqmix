@@ -31,7 +31,7 @@ PUMP_4['index'] = 3
 PUMP_4['flow'] = dict(prefix="milli", volume_unit="litres",
                       time_unit="per_second")
 PUMP_4['volume'] = dict(prefix="milli", unit="litres")
-PUMP_4['syringe'] = dict(inner_diameter_mm=23.03,
+PUMP_4['syringe'] = dict(inner_diameter_mm=32.5,
                          max_piston_stroke_mm=60)
 
 PUMP_5 = dict()
@@ -47,5 +47,5 @@ PUMP_6['index'] = 5
 PUMP_6['flow'] = dict(prefix="milli", volume_unit="litres",
                       time_unit="per_second")
 PUMP_6['volume'] = dict(prefix="milli", unit="litres")
-PUMP_6['syringe'] = dict(inner_diameter_mm=32.5,
+PUMP_6['syringe'] = dict(inner_diameter_mm=23.03,
                          max_piston_stroke_mm=60)
