@@ -23,6 +23,7 @@ setup(
     license='GPL v3',
     description='TODO',
     long_description=open('README.md').read(),
+    requires=['ruamel.yaml'],
     install_requires=['cffi'],
     classifiers=['Intended Audience :: Science/Research',
                  'Programming Language :: Python',

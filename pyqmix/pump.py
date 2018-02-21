@@ -228,8 +228,8 @@ class QmixPump(object):
         Parameters
         ----------
         prefix : str
-            The prefix of the SIunit:
-            ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+            The prefix of the SI unit:
+            ``centi``, ``deci``, ``milli``, ``micro``.
 
         volume_unit : str
             The volume unit identifier: ``litres``.
