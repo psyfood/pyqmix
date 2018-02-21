@@ -30,9 +30,14 @@ class QmixBus(object):
     dll_dir : str
         Absolute path to the folder that contains Qmix .dll files.
 
+    auto_open, auto_start : bool
+        Whether to open and start the bus connection automatically on
+        object instatiation.
+
     """
 
-    def __init__(self, config_dir=None, dll_dir=None):
+    def __init__(self, config_dir=None, dll_dir=None, auto_open=True,
+                 auto_start=True):
         if config.DLL_DIR is None:
             if dll_dir is None:
                 raise ValueError('No DLL directory specified.')
@@ -50,11 +55,20 @@ class QmixBus(object):
 
         self.config_dir = config.CONFIG_DIR
 
+        self.auto_open = auto_open
+        self.auto_start = auto_start
+
         self._ffi = FFI()
         self._ffi.cdef(BUS_HEADER)
         self._dll = self._ffi.dlopen(self.dll_file)
         self.is_open = False
         self.is_started = False
+
+        if self.auto_open:
+            self.open()
+
+        if self.auto_start:
+            self.start()
 
     def __del__(self):
         self.stop()
