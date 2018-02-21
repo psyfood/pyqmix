@@ -1,3 +1,7 @@
+2018-02-21
+----------
+* `QmixBus` gained `auto_open` and `auto_start` init parameters
+
 2017-10-09
 ----------
 * Convert `config.py` module to sub-package
