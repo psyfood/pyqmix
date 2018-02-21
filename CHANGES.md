@@ -1,6 +1,7 @@
 2018-02-21
 ----------
 * `QmixBus` gained `auto_open` and `auto_start` init parameters
+* `QmixPump` gained `auto_enable` init parameter
 
 2017-10-09
 ----------

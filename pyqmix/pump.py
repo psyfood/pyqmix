@@ -31,9 +31,13 @@ class QmixPump(object):
         The name of the pump to initialize. Will be ignored if `index` is
         not `None`.
 
+    auto_enable : bool
+        Whether to enable (i.e., activate) the pump on object instantiation.
+
     """
 
-    def __init__(self, index=None, name='', external_valves=None):
+    def __init__(self, index=None, name='', external_valves=None,
+                 auto_enable=True):
         if index is None and name == '':
             raise ValueError('Please specify a valid pump index or name')
         else:
@@ -75,6 +79,10 @@ class QmixPump(object):
             self.ext_valves = external_valves
 
         self.name = name
+
+        self.auto_enable = auto_enable
+        if self.auto_enable:
+            self.enable()
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
