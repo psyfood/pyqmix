@@ -164,7 +164,7 @@ class QmixPump(object):
         else:
             return True
 
-    def calibrate(self, blocking_wait=True):
+    def calibrate(self, blocking_wait=False):
         """
         Executes a reference move for a syringe pump.
 
