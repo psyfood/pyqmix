@@ -35,7 +35,7 @@ class QmixBus(object):
     auto_open : bool
         Whether to open the labbCAN bus automatically on object instantiation.
 
-     auto_start : bool
+    auto_start : bool
         Whether to start the CAN bus communication automatically on object
         instantiation. Since the bus needs to be opened before communication
         can commence, setting `auto_start=True` will always open the bus,

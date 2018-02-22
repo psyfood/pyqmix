@@ -19,25 +19,25 @@ from .headers import PUMP_HEADER
 class QmixPump(object):
     """
     Qmix pump interface.
-
-    Parameters
-    ----------
-    index : int, or None
-        Index of the pump to access. It is related with the config files.
-        First pump has ``index=0``, second has ``index=1`` and so on.
-        Takes precedence over the `name` parameter.
-
-    name : str
-        The name of the pump to initialize. Will be ignored if `index` is
-        not `None`.
-
-    auto_enable : bool
-        Whether to enable (i.e., activate) the pump on object instantiation.
-
     """
-
     def __init__(self, index=None, name='', external_valves=None,
                  auto_enable=True):
+        """
+        Parameters
+        ----------
+        index : int, or None
+            Index of the pump to access. It is related with the config files.
+            First pump has ``index=0``, second has ``index=1`` and so on.
+            Takes precedence over the `name` parameter.
+
+        name : str
+            The name of the pump to initialize. Will be ignored if `index` is
+            not `None`.
+
+        auto_enable : bool
+            Whether to enable (i.e., activate) the pump on object instantiation.
+
+        """
         if index is None and name == '':
             raise ValueError('Please specify a valid pump index or name')
         else:
