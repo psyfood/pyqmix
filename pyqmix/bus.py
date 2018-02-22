@@ -17,9 +17,11 @@ from .headers import BUS_HEADER
 
 class QmixBus(object):
     """
-    It establishes the communication between the bus and the devices.
+    Qmix bus interface.
 
-    First class that has to be initialized.
+    This interface establishes a connection with the labbCAN bus used for
+    communication with all attached devices. Accordingly, has to be
+    initialized before any hardware can be accessed.
 
     Parameters
     ----------
@@ -30,9 +32,14 @@ class QmixBus(object):
     dll_dir : str
         Absolute path to the folder that contains Qmix .dll files.
 
-    auto_open, auto_start : bool
-        Whether to open and start the bus connection automatically on
-        object instatiation.
+    auto_open : bool
+        Whether to open the labbCAN bus automatically on object instantiation.
+
+     auto_start : bool
+        Whether to start the CAN bus communication automatically on object
+        instantiation. Since the bus needs to be opened before communication
+        can commence, setting `auto_start=True` will always open the bus,
+        regardless of the `auto_open` parameter specified.
 
     """
 
@@ -68,6 +75,8 @@ class QmixBus(object):
             self.open()
 
         if self.auto_start:
+            if not self.is_open:
+                self.open()
             self.start()
 
     def __del__(self):
@@ -109,6 +118,11 @@ class QmixBus(object):
         invoked.
 
         """
+        if not self.is_open:
+            msg = ('Bus needs to be opened before communication can start.'
+                   'Call `QmixBus.open()` first.')
+            raise RuntimeError(msg)
+
         self._call('LCB_Start')
         time.sleep(1)
         self.is_started = True
