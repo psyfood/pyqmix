@@ -84,8 +84,7 @@ class QmixBus(object):
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
         r = func(*args)
-        r = CHK(r, func_name, *args)
-        return r
+        return CHK(r)
 
     def open(self):
         """
