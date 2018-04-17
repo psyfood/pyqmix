@@ -166,7 +166,7 @@ class QmixPump(object):
         Enable the pump.
 
         """
-        return self._call('LCP_Enable', self._handle[0])
+        self._call('LCP_Enable', self._handle[0])
 
     def disable(self):
         """
@@ -206,7 +206,7 @@ class QmixPump(object):
         we have to assume that a serious failure occurred.
 
         """
-        return self._call('LCP_ClearFault', self._handle[0])
+        self._call('LCP_ClearFault', self._handle[0])
 
     @property
     def is_calibration_finished(self):
@@ -525,7 +525,7 @@ class QmixPump(object):
 
         Notes
         -----
-        This method switches the valve in position 1 (green led activated)
+        This method switches the valve to aspiration position
         before the actual aspiration begins.
 
         """
@@ -557,9 +557,6 @@ class QmixPump(object):
         switch_valve_when_finished : bool
             If set to ``True``, it switches valve to postion 1 when dispense is
             finished. It only has effect if ``blocking_wait = True``.
-
-        Returns
-        -------
 
         """
         self.valve.switch_position(self.valve.dispense_pos)
@@ -635,7 +632,6 @@ class QmixPump(object):
         """
         self._call('LCP_StopPumping', self._handle[0])
 
-    # TODO: modify?
     def stop_all_pumps(self):
         """
         Immediately stop all pumps.
