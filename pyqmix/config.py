@@ -33,12 +33,12 @@ def read_config():
             if not os.path.isdir(PYQMIX_CONFIG_DIR):
                 raise
 
-        cfg = OrderedDict(dll_dir='', config_dir='', pumps=dict())
+        cfg = OrderedDict(qmix_dll_dir='', qmix_config_dir='', pumps=dict())
 
     return cfg
 
 
-def set_config_dir(d):
+def set_qmix_config_dir(d):
     """
     Specify the location of the directory containing the Qmix configurations.
 
@@ -49,13 +49,13 @@ def set_config_dir(d):
 
     """
     cfg = read_config()
-    cfg['config_dir'] = d
+    cfg['qmix_config_dir'] = d
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
 
 
-def set_dll_dir(d):
+def set_qmix_dll_dir(d):
     """
     Specify the location of the directory containing the Qmix DLL files.
 
@@ -66,16 +66,17 @@ def set_dll_dir(d):
 
     """
     cfg = read_config()
-    cfg['dll_dir'] = d
+    cfg['qmix_dll_dir'] = d
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
 
 
-def add_pump(name, index, flow_prefix='milli',
+def add_pump(name, index,
              volume_prefix='milli', volume_unit='litres',
-             flow_volume_unit='litres', flow_time_unit='per_second',
-             syringe_inner_diameter_mm=23.0329,
+             flow_prefix='milli', flow_volume_unit='litres',
+             flow_time_unit='per_second',
+             syringe_inner_diameter_mm=32.5735,
              syringe_max_piston_stroke_mm=60):
     """
     Add a new pump (and syringe) to the pyqmix configuration.
@@ -113,21 +114,50 @@ def add_pump(name, index, flow_prefix='milli',
         Maximum piston stroke of the installed syringe.
 
     """
-    p = OrderedDict(index=index, flow_prefix=flow_prefix,
+    p = OrderedDict(index=index,
                     volume_prefix=volume_prefix, volume_unit=volume_unit,
-                    flow_volume_unit=flow_volume_unit,
+                    flow_prefix=flow_prefix, flow_volume_unit=flow_volume_unit,
                     flow_time_unit=flow_time_unit,
                     syringe_inner_diameter_mm=syringe_inner_diameter_mm,
                     syringe_max_piston_stroke_mm=syringe_max_piston_stroke_mm)
 
     cfg = read_config()
     pumps = cfg.get('pumps', dict())
-    pumps[name] = dict()
 
-    for param in p:
-        pumps[name][param] = p[param]
+    # pumps[name] = dict()
+    # for param in p:
+    #     pumps[name][param] = p[param]
 
+    pumps[name] = p
     cfg['pumps'] = pumps
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
+
+
+def remove_pump(name):
+    """
+    Remove a pump and syringe configuration.
+
+    Parameters
+    ----------
+    name : string
+        A unique specifier of the pump.
+
+    Raises
+    ------
+    NameError
+        If the specified pump name could not be found in the configuration
+        file.
+
+    """
+    cfg = read_config()
+
+    try:
+        del cfg['pumps'][name]
+        with open(PYQMIX_CONFIG_FILE, 'w') as f:
+            yaml.dump(cfg, f)
+    except KeyError:
+        msg = ('Specified pump name could not be found in the configuration '
+               'file.')
+        raise NameError(msg)

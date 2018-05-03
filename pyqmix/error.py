@@ -10,7 +10,14 @@ from .headers import ERROR_HEADER
 
 class QmixError(object):
     def __init__(self, error_number):
-        self.dll_file = os.path.join(config.DLL_DIR, 'usl.dll')
+        dll_dir = config.read_config().get('qmix_dll_dir', None)
+        if dll_dir is None:
+            msg = ('Please specify the Qmix DLL directory via '
+                   'pyqmix.config.set_qmix_dll_dir() first.')
+            raise RuntimeError(msg)
+
+        self.dll_file = os.path.join(dll_dir, 'usl.dll')
+
         self._ffi = FFI()
         self._ffi.cdef(ERROR_HEADER)
 
