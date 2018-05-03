@@ -33,7 +33,8 @@ def read_config():
             if not os.path.isdir(PYQMIX_CONFIG_DIR):
                 raise
 
-        cfg = OrderedDict(qmix_dll_dir='', qmix_config_dir='', pumps=dict())
+        cfg = OrderedDict(qmix_dll_dir='', qmix_config_dir='',
+                          pumps=OrderedDict())
 
     return cfg
 
@@ -72,121 +73,101 @@ def set_qmix_dll_dir(d):
         yaml.dump(cfg, f)
 
 
-def add_pump(name, index,
-             volume_prefix='milli', volume_unit='litres',
-             flow_prefix='milli', flow_volume_unit='litres',
-             flow_time_unit='per_second',
-             syringe_inner_diameter_mm=32.5735,
-             syringe_max_piston_stroke_mm=60):
+def add_pump(index):
     """
-    Add a new pump (and syringe) to the pyqmix configuration.
+    Add a new pump to the pyqmix configuration. Overwrites existing entries
+    for a pump with the same index.
 
     Parameters
     ----------
-    name : string
-        A unique specifier of the pump.
-
     index : int
-        The index of the pump. Indexing is zero-based, i.e. `index=0`
+        The unique index of the pump. Indexing is zero-based, i.e. `index=0`
         refers to the first pump in the system.
 
-    volume_prefix : string
-        The prefix of the SI unit:
-        ``centi``, ``deci``, ``milli``, ``micro``.
-
-    volume_unit : string
-        The volume unit: ``litres``.
-
-    flow_prefix : string
-        Similar to `volume_prefix`, but for the flow rate.
-
-    flow_volume_unit : string
-        Similar to `volume_unit`, but for the flow rate.
-
-    flow_time_unit : string
-        The time unit (denominator) of the velocity unit:
-        ``per_hour``, ``per_minute``, ``per_second``.
-
-    syringe_inner_diameter_mm : float
-        The inner diameter of the installed syringe.
-
-    syringe_max_piston_stroke_mm : float
-        Maximum piston stroke of the installed syringe.
-
     """
-    p = OrderedDict(index=index,
-                    volume_prefix=volume_prefix, volume_unit=volume_unit,
-                    flow_prefix=flow_prefix, flow_volume_unit=flow_volume_unit,
-                    flow_time_unit=flow_time_unit,
-                    syringe_inner_diameter_mm=syringe_inner_diameter_mm,
-                    syringe_max_piston_stroke_mm=syringe_max_piston_stroke_mm)
+    if not isinstance(index, int):
+        raise TypeError('Pump index must be an integer!')
 
     cfg = read_config()
-    pumps = cfg.get('pumps', dict())
-
-    # pumps[name] = dict()
-    # for param in p:
-    #     pumps[name][param] = p[param]
-
-    pumps[name] = p
-    cfg['pumps'] = pumps
+    cfg['pumps'][index] = OrderedDict(name=None, volume_unit=None,
+                                      flow_unit=None, syringe_params=None,
+                                      drive_pos_counter=None)
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
 
 
-def remove_pump(name):
+def set_pump_name(index, name):
+    cfg = read_config()
+    pump = cfg['pumps'][index]
+    pump['name'] = name
+
+    with open(PYQMIX_CONFIG_FILE, 'w') as f:
+        yaml.dump(cfg, f)
+
+
+def set_pump_drive_pos_counter(index, value):
+    cfg = read_config()
+    pump = cfg['pumps'][index]
+    pump['drive_pos_counter'] = value
+
+    with open(PYQMIX_CONFIG_FILE, 'w') as f:
+        yaml.dump(cfg, f)
+
+
+def set_pump_volume_unit(index, prefix, unit):
+    cfg = read_config()
+    pump = cfg['pumps'][index]
+    pump['volume_unit'] = OrderedDict(prefix=prefix, unit=unit)
+
+    with open(PYQMIX_CONFIG_FILE, 'w') as f:
+        yaml.dump(cfg, f)
+
+
+def set_pump_flow_unit(index, prefix, volume_unit, time_unit):
+    cfg = read_config()
+    pump = cfg['pumps'][index]
+    pump['flow_unit'] = OrderedDict(prefix=prefix, volume_unit=volume_unit,
+                                    time_unit=time_unit)
+
+    with open(PYQMIX_CONFIG_FILE, 'w') as f:
+        yaml.dump(cfg, f)
+
+
+def set_pump_syringe_params(index, inner_diameter_mm, max_piston_stroke_mm):
+    cfg = read_config()
+    pump = cfg['pumps'][index]
+    pump['syringe_params'] = OrderedDict(
+        inner_diameter_mm=inner_diameter_mm,
+        max_piston_stroke_mm=max_piston_stroke_mm)
+
+    with open(PYQMIX_CONFIG_FILE, 'w') as f:
+        yaml.dump(cfg, f)
+
+
+def remove_pump(index):
     """
     Remove a pump and syringe configuration.
 
     Parameters
     ----------
-    name : string
-        A unique specifier of the pump.
+    index : int
+        The unique index of the pump.
 
     Raises
     ------
-    NameError
-        If the specified pump name could not be found in the configuration
+    KeyError
+        If the specified pump index could not be found in the configuration
         file.
 
     """
     cfg = read_config()
 
     try:
-        del cfg['pumps'][name]
+        del cfg['pumps'][index]
         with open(PYQMIX_CONFIG_FILE, 'w') as f:
             yaml.dump(cfg, f)
     except KeyError:
-        msg = ('Specified pump name could not be found in the configuration '
+        msg = ('Specified pump index could not be found in the configuration '
                'file.')
-        raise NameError(msg)
-
-
-def save_drive_position_counter(pump):
-    """
-    Save the current driver position counter of a pump.
-
-    The position counter gets reset to zero when the pump system is powered
-    off. To avoid having to recalibrate the system (i.e., doing a reference
-    move, which requires removal of the syringes), this function may be used
-    to save the current drive position counter to the configuration file,
-    from where it can be safely restored once the system is powered on again.
-
-    Parameters
-    ----------
-    pump : pyqmix.QmixPump
-        An instance of a pyqmix pump.
-
-    """
-    cfg = read_config()
-    try:
-        p = cfg['pumps'][pump.name]
-    except KeyError:
-        msg= ('Pump does not yet exist in configuration file. '
-              'Use pyqmix.config.add_pump() first.')
-        raise NameError(msg)
-
-    p['drive_pos_counter'] = pump.drive_pos_counter
-    with open(PYQMIX_CONFIG_FILE, 'w') as f:
-        yaml.dump(cfg, f)
+        raise KeyError(msg)

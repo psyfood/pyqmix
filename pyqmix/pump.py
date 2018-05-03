@@ -4,6 +4,7 @@
 import os
 import time
 import sys
+import atexit
 from cffi import FFI
 from collections import OrderedDict
 
@@ -21,31 +22,25 @@ class QmixPump(object):
     """
     Qmix pump interface.
     """
-    def __init__(self, index=None, name='', external_valves=None,
+    def __init__(self, index, name='', external_valves=None,
                  auto_enable=True):
         """
         Parameters
         ----------
-        index : int, or None
+        index : int
             Index of the pump to access. It is related with the config files.
             First pump has ``index=0``, second has ``index=1`` and so on.
             Takes precedence over the `name` parameter.
 
         name : str
-            The name of the pump to initialize. Will be ignored if `index` is
-            not `None`.
+            The name of the pump.
 
         auto_enable : bool
             Whether to enable (i.e., activate) the pump on object instantiation.
 
         """
-        if index is None and name == '':
-            raise ValueError('Please specify a valid pump index or name')
-        else:
-            self.index = index
-            self.name = name
-
-        dll_dir = config.read_config().get('qmix_dll_dir', None)
+        cfg = config.read_config()
+        dll_dir = cfg.get('qmix_dll_dir', None)
         if dll_dir is None:
             msg = ('Please specify the Qmix DLL directory via '
                    'pyqmix.config.set_qmix_dll_dir() first.')
@@ -57,14 +52,11 @@ class QmixPump(object):
         self._ffi.cdef(PUMP_HEADER)
         self._dll = self._ffi.dlopen(self.dll_file)
 
-        self._handle = self._ffi.new('dev_hdl *', 0)
+        self.index = index
+        self._name = name
 
-        if self.index is not None:
-            self._call('LCP_GetPumpHandle', self.index, self._handle)
-        else:
-            self._call('LCP_LookupPumpByName',
-                       bytes(self.name, 'utf8'),
-                       self._handle)
+        self._handle = self._ffi.new('dev_hdl *', 0)
+        self._call('LCP_GetPumpHandle', self.index, self._handle)
 
         self._flow_rate_max = self._ffi.new('double *')
         self._p_fill_level = self._ffi.new('double *')
@@ -98,17 +90,53 @@ class QmixPump(object):
         else:
             self.ext_valves = external_valves
 
-        self.name = name
-
         self.auto_enable = auto_enable
         if self.auto_enable:
             self.enable()
+
+        try:  # Try to restore settings from configuration file.
+            pump_config = cfg['pumps'][self.index]
+
+            # We get back CommentedOrderedMap's, so convert to dicts.
+            volume_unit = dict(pump_config['volume_unit'])
+            flow_unit = dict(pump_config['flow_unit'])
+            syringe_params = dict(pump_config['syringe_params'])
+
+            name = pump_config['name']
+            drive_pos_counter = pump_config['drive_pos_counter']
+
+            if self._name == '':
+                self._name = name
+
+            self.volume_unit = volume_unit
+            self.flow_unit = flow_unit
+            self.syringe_params = syringe_params
+            self.drive_pos_counter = drive_pos_counter
+        except KeyError:  # Write default values to configuration file.
+            config.add_pump(self.index)
+            config.set_pump_name(self.index, self._name)
+            config.set_pump_volume_unit(self.index, **self.volume_unit)
+            config.set_pump_flow_unit(self.index, **self.flow_unit)
+            config.set_pump_syringe_params(self.index, **self.syringe_params)
+            config.set_pump_drive_pos_counter(self.index,
+                                              self.drive_pos_counter)
+
+        atexit.register(self.save_drive_pos_counter())
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
         r = func(*args)
         r = CHK(r, func_name, *args)
         return r
+
+    @property
+    def name (self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+        config.set_pump_name(self.index, name)
 
     @property
     def is_enabled(self):
@@ -238,6 +266,8 @@ class QmixPump(object):
                    getattr(self._dll, prefix.upper()),
                    getattr(self._dll, unit.upper()))
 
+        config.set_pump_volume_unit(self.index, prefix=prefix, unit=unit)
+
     def get_volume_unit(self):
         """
         Return the currently set default volume unit.
@@ -311,6 +341,9 @@ class QmixPump(object):
                    getattr(self._dll, prefix.upper()),
                    getattr(self._dll, volume_unit.upper()),
                    getattr(self._dll, time_unit.upper()))
+
+        config.set_pump_flow_unit(self.index, prefix=prefix,
+                                  volume_unit=volume_unit, time_unit=time_unit)
 
     def get_flow_unit(self):
         """
@@ -394,6 +427,11 @@ class QmixPump(object):
         """
         self._call('LCP_SetSyringeParam', self._handle[0], inner_diameter_mm,
                    max_piston_stroke_mm)
+
+        config.set_pump_syringe_params(
+            self.index,
+            inner_diameter_mm=inner_diameter_mm,
+            max_piston_stroke_mm=max_piston_stroke_mm)
 
     def get_syringe_params(self):
         """
@@ -694,9 +732,10 @@ class QmixPump(object):
 
         The position counter gets reset to zero when the pump system is powered
         off. To avoid having to recalibrate the system (i.e., doing a reference
-        move, which requires removal of the syringes), this function may be used
-        to save the current drive position counter to the configuration file,
-        from where it can be safely restored once the system is powered on again.
+        move, which requires removal of the syringes), this function may be
+        used to save the current drive position counter to the configuration
+        file, from where it can be safely restored once the system is powered
+        on again.
 
         Returns
         -------
@@ -718,7 +757,7 @@ class QmixPump(object):
         Save the current drive position counter to the configuration file.
 
         """
-        config.save_drive_position_counter(self)
+        config.set_pump_drive_pos_counter(self.index, self.drive_pos_counter)
 
 
 def init_pump(params):
