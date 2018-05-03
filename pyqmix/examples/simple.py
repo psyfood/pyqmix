@@ -26,7 +26,7 @@ pump.calibrate(blocking_wait=True)
 pump.set_flow_unit(prefix='milli', volume_unit='litres',
                    time_unit='per_second')
 pump.set_volume_unit(prefix='milli', unit='litres')
-pump.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+pump.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
 
 msg = ('The system is now calibrated. Please insert the syringe.\n\n'
        'Press RETURN when done.')

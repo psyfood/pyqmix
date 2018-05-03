@@ -44,7 +44,7 @@ pump = dict(water=QmixPump(index=0),
 for p_name, p in pump.items():
     p.set_flow_unit(**flow_unit)
     p.set_volume_unit(**volume_unit)
-    p.set_syringe_param(**syringe_params)
+    p.set_syringe_params(**syringe_params)
     p.calibrate(blocking_wait=True)
 
 msg = ('The system is now calibrated. Please insert the syringes.\n\n'

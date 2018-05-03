@@ -192,11 +192,11 @@ if __name__ == '__main__':
     pump_4.set_volume_unit(prefix="milli", unit="litres")
     pump_5.set_volume_unit(prefix="milli", unit="litres")
     pump_6.set_volume_unit(prefix="milli", unit="litres")
-    pump_2.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
-    pump_3.set_syringe_param(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
-    pump_4.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-    pump_5.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-    pump_6.set_syringe_param(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    pump_2.set_syringe_params(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
+    pump_3.set_syringe_params(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
+    pump_4.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    pump_5.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+    pump_6.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
     
     #%% CALIBRATION 
     ######## REMOVE SYRINGES ########
