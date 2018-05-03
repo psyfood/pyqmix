@@ -70,6 +70,8 @@ class QmixPump(object):
         self._p_dosed_volume = self._ffi.new('double *')
         self._p_flow_rate = self._ffi.new('double *')
 
+        self._p_drive_pos_counter = self._ffi.new('long *')
+
         self._valve_handle = self._ffi.new('dev_hdl *', 0)
         self._call('LCP_GetValveHandle', self._handle[0], self._valve_handle)
         self.valve = QmixValve(handle=self._valve_handle)
@@ -263,15 +265,13 @@ class QmixPump(object):
         Parameters
         ----------
         inner_diameter_mm : float
-            Inner diameter of the syringe tube in millimetres. Default is
-            23.03 (mm) that indicates a 25 ml syringe. For the 50 ml syringe
-            use 32.5 (mm).
+            Inner diameter of the syringe tube in millimetres.
 
         max_piston_stroke_mm : float
             The maximum piston stroke defines the maximum position the piston
-            can be moved to before it slips out of the syringe tube. The maximum
-            piston stroke limits the maximum travel range of the syringe pump
-            pusher.
+            can be moved to before it slips out of the syringe tube.
+            The maximum piston stroke limits the maximum travel range of the
+            syringe pump pusher.
 
         """
         self._call('LCP_SetSyringeParam', self._handle[0], inner_diameter_mm,
@@ -533,6 +533,39 @@ class QmixPump(object):
 
     def remove_external_valve(self, name):
         del self.ext_valves[name]
+
+    @property
+    def drive_pos_counter(self):
+        """
+        Current drive position counter of the pump.
+
+        The position counter gets reset to zero when the pump system is powered
+        off. To avoid having to recalibrate the system (i.e., doing a reference
+        move, which requires removal of the syringes), this function may be used
+        to save the current drive position counter to the configuration file,
+        from where it can be safely restored once the system is powered on again.
+
+        Returns
+        -------
+        int
+            The current value of the drive position counter.
+
+        """
+        self._call('LCP_GetDrivePosCnt', self._handle[0],
+                   self._p_drive_pos_counter)
+        return self._p_drive_pos_counter[0]
+
+    @drive_pos_counter.setter
+    def drive_pos_counter(self, value):
+        value = int(value)
+        self._call('LCP_RestoreDrivePosCnt', self._handle[0], value)
+
+    def save_drive_pos_counter(self):
+        """
+        Save the current drive position counter to the configuration file.
+
+        """
+        config.save_drive_position_counter(self)
 
 
 def init_pump(params):

@@ -161,3 +161,32 @@ def remove_pump(name):
         msg = ('Specified pump name could not be found in the configuration '
                'file.')
         raise NameError(msg)
+
+
+def save_drive_position_counter(pump):
+    """
+    Save the current driver position counter of a pump.
+
+    The position counter gets reset to zero when the pump system is powered
+    off. To avoid having to recalibrate the system (i.e., doing a reference
+    move, which requires removal of the syringes), this function may be used
+    to save the current drive position counter to the configuration file,
+    from where it can be safely restored once the system is powered on again.
+
+    Parameters
+    ----------
+    pump : pyqmix.QmixPump
+        An instance of a pyqmix pump.
+
+    """
+    cfg = read_config()
+    try:
+        p = cfg['pumps'][pump.name]
+    except KeyError:
+        msg= ('Pump does not yet exist in configuration file. '
+              'Use pyqmix.config.add_pump() first.')
+        raise NameError(msg)
+
+    p['drive_pos_counter'] = pump.drive_pos_counter
+    with open(PYQMIX_CONFIG_FILE, 'w') as f:
+        yaml.dump(cfg, f)
