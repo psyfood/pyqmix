@@ -47,11 +47,10 @@ class QmixBus(object):
                  auto_start=True):
         dll_dir = config.read_config().get('qmix_dll_dir', None)
         if dll_dir is None:
-            msg = ('Please specify the Qmix DLL directory via '
-                   'pyqmix.config.set_qmix_dll_dir() first.')
-            raise RuntimeError(msg)
-
-        self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
+            self.dll_file = 'labbCAN_Bus_API.dll'
+        else:
+            os.environ['PATH'] += os.pathsep + dll_dir
+            self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
 
         config_dir = config.read_config().get('qmix_config_dir', None)
         if config_dir is None:

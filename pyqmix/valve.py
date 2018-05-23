@@ -45,11 +45,9 @@ class QmixValve(object):
 
         dll_dir = config.read_config().get('qmix_dll_dir', None)
         if dll_dir is None:
-            msg = ('Please specify the Qmix DLL directory via '
-                   'pyqmix.config.set_qmix_dll_dir() first.')
-            raise RuntimeError(msg)
-
-        self.dll_file = os.path.join(dll_dir, 'labbCAN_Valve_API.dll')
+            self.dll_file = 'labbCAN_Valve_API.dll'
+        else:
+            self.dll_file = os.path.join(dll_dir, 'labbCAN_Valve_API.dll')
 
         self._ffi = FFI()
         self._ffi.cdef(VALVE_HEADER)
