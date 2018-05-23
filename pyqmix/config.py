@@ -13,6 +13,13 @@ PYQMIX_CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.pyqmix')
 PYQMIX_CONFIG_FILE = os.path.join(PYQMIX_CONFIG_DIR, 'config.yaml')
 
 
+# Python 2 compatibility
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
+
 def read_config():
     """
     Read the currently stored pyqmix confuration from disk.
