@@ -25,12 +25,6 @@ class QmixBus(object):
 
     Parameters
     ----------
-    config_dir : str
-        Absolute path to the folder that contains the device configuration files
-        (XML config files).
-
-    dll_dir : str
-        Absolute path to the folder that contains Qmix .dll files.
 
     auto_open : bool
         Whether to open the labbCAN bus automatically on object instantiation.
@@ -43,22 +37,28 @@ class QmixBus(object):
 
     """
 
-    def __init__(self, config_dir=None, dll_dir=None, auto_open=True,
-                 auto_start=True):
-        dll_dir = config.read_config().get('qmix_dll_dir', None)
+    def __init__(self, auto_open=True, auto_start=True):
+        dll_dir = config.read_config().get('qmix_dll_dir')
         if dll_dir is None:
             self.dll_file = 'labbCAN_Bus_API.dll'
         else:
             os.environ['PATH'] += os.pathsep + dll_dir
             self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
 
-        config_dir = config.read_config().get('qmix_config_dir', None)
-        if config_dir is None:
+        header_dir = config.read_config().get('qmix_dll_dir')
+        if header_dir is not None:
+            self.header_dir = header_dir
+        else:
+            msg = 'Please specify a Qmix SDK header dir.'
+            raise ValueError(msg)
+
+        config_dir = config.read_config().get('qmix_config_dir')
+        if config_dir is not None:
+            self.config_dir = config_dir
+        else:
             msg = ('Please specify the Qmix configuration directory via '
                    'pyqmix.config.set_qmix_config_dir() first.')
             raise RuntimeError(msg)
-
-        self.config_dir = config_dir
 
         self.auto_open = auto_open
         self.auto_start = auto_start
