@@ -38,6 +38,8 @@ PUMP_HEADER = """
                             int    Prefix,
                             int     VolumeUnit,
                             int     TimeUnit);
+    long LCP_GetSyringeParam(dev_hdl hPump, double *pInnerDiameter_mm,
+        double *pMaxPistonStroke_mm);	
     long LCP_SetSyringeParam(dev_hdl hPump,
                                 double  InnerDiameter_mm,
                                 double  MaxPistonStroke_mm);
@@ -53,6 +55,9 @@ PUMP_HEADER = """
     long LCP_GetFlowIs(dev_hdl hPump, double *pFlowRateIs);
     long LCP_IsPumping(dev_hdl hPump);
     long LCP_GetFlowRateMax(dev_hdl hPump, double* FlowRateMax);
+    long LCP_GetFlowUnit (dev_hdl hPump, int *pPrefix, int *pVolumeUnit,
+        int *pTimeUnit);		
+    long LCP_GetVolumeUnit (dev_hdl hPump, int *pPrefix, int *pVolumeUnit);		
     long LCP_StopPumping(dev_hdl hPump);
     long LCP_StopAllPumps();
     long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
