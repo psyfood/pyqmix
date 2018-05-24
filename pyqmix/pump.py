@@ -119,7 +119,7 @@ class QmixPump(object):
             config.set_pump_drive_pos_counter(self.index,
                                               self.drive_pos_counter)
 
-        atexit.register(self.save_drive_pos_counter())
+        atexit.register(self.save_drive_pos_counter)
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
