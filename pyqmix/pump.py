@@ -23,6 +23,7 @@ class QmixPump(object):
     Qmix pump interface.
     """
     def __init__(self, index, name='', external_valves=None,
+                 restore_drive_pos_counter=True,
                  auto_enable=True):
         """
         Parameters
@@ -34,6 +35,10 @@ class QmixPump(object):
 
         name : str
             The name of the pump.
+
+        restore_drive_pos_counter : bool
+            Whether to restore the pump drive position counter from the pyqmix
+            config file.
 
         auto_enable : bool
             Whether to enable (i.e., activate) the pump on object instantiation.
@@ -101,7 +106,11 @@ class QmixPump(object):
             syringe_params = dict(pump_config['syringe_params'])
 
             name = pump_config['name']
-            drive_pos_counter = pump_config['drive_pos_counter']
+
+            if restore_drive_pos_counter:
+                drive_pos_counter = pump_config['drive_pos_counter']
+            else:
+                drive_pos_counter = self.drive_pos_counter
 
             if self._name == '':
                 self._name = name
