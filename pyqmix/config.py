@@ -40,8 +40,10 @@ def read_config():
             if not os.path.isdir(PYQMIX_CONFIG_DIR):
                 raise
 
-        cfg = OrderedDict(qmix_dll_dir='', qmix_config_dir='',
-                          pumps=OrderedDict())
+        cfg = OrderedDict([('qmix_dll_dir', ''),
+                           ('qmix_header_dir', ''),
+                           ('qmix_config_dir', ''),
+                           ('pumps', OrderedDict())])
 
     return cfg
 
