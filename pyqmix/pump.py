@@ -354,7 +354,7 @@ class QmixPump(object):
             `time_unit`.
 
         """
-        self._call('LCP_SetFlowUnit', self._handle[0], self._p_flow_prefix,
+        self._call('LCP_GetFlowUnit', self._handle[0], self._p_flow_prefix,
                    self._p_flow_volume_unit, self._p_flow_time_unit)
 
         if self._p_flow_prefix[0] == self._dll.MICRO:
