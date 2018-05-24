@@ -132,9 +132,12 @@ def add_pump(index):
         raise TypeError('Pump index must be an integer!')
 
     cfg = read_config()
-    cfg['pumps'][index] = OrderedDict(name=None, volume_unit=None,
-                                      flow_unit=None, syringe_params=None,
-                                      drive_pos_counter=None)
+    cfg['pumps'][index] = OrderedDict(
+        [('name', None),
+         ('volume_unit', None),
+         ('flow_unit', None),
+         ('syringe_params', None),
+         ('drive_pos_counter', None)])
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
@@ -161,7 +164,8 @@ def set_pump_drive_pos_counter(index, value):
 def set_pump_volume_unit(index, prefix, unit):
     cfg = read_config()
     pump = cfg['pumps'][index]
-    pump['volume_unit'] = OrderedDict(prefix=prefix, unit=unit)
+    pump['volume_unit'] = OrderedDict([('prefix', prefix),
+                                       ('unit', unit)])
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
@@ -170,8 +174,9 @@ def set_pump_volume_unit(index, prefix, unit):
 def set_pump_flow_unit(index, prefix, volume_unit, time_unit):
     cfg = read_config()
     pump = cfg['pumps'][index]
-    pump['flow_unit'] = OrderedDict(prefix=prefix, volume_unit=volume_unit,
-                                    time_unit=time_unit)
+    pump['flow_unit'] = OrderedDict([('prefix', prefix),
+                                     ('volume_unit', volume_unit),
+                                     ('time_unit', time_unit)])
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
@@ -181,8 +186,8 @@ def set_pump_syringe_params(index, inner_diameter_mm, max_piston_stroke_mm):
     cfg = read_config()
     pump = cfg['pumps'][index]
     pump['syringe_params'] = OrderedDict(
-        inner_diameter_mm=inner_diameter_mm,
-        max_piston_stroke_mm=max_piston_stroke_mm)
+        [('inner_diameter_mm', inner_diameter_mm),
+         ('max_piston_stroke_mm', max_piston_stroke_mm)])
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)

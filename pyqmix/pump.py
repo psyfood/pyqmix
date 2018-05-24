@@ -295,7 +295,8 @@ class QmixPump(object):
         else:
             raise RuntimeError('Invalid flow volume unit retrieved.')
 
-        return OrderedDict(prefix=prefix, unit=unit)
+        return OrderedDict([('prefix', prefix),
+                            ('unit', unit)])
 
     @property
     def volume_unit(self):
@@ -383,8 +384,9 @@ class QmixPump(object):
         else:
             raise RuntimeError('Invalid flow time unit retrieved.')
 
-        return OrderedDict(prefix=prefix, volume_unit=volume_unit,
-                           time_unit=time_unit)
+        return OrderedDict([('prefix', prefix),
+                            ('volume_unit', volume_unit),
+                            ('time_unit', time_unit)])
 
     @property
     def flow_unit(self):
@@ -446,8 +448,8 @@ class QmixPump(object):
                    self._p_inner_diameter_mm, self._p_max_piston_stroke_mm)
 
         return OrderedDict(
-            inner_diameter_mm=self._p_inner_diameter_mm[0],
-            max_piston_stroke_mm=self._p_max_piston_stroke_mm[0])
+            [('inner_diameter_mm', self._p_inner_diameter_mm[0]),
+             ('max_piston_stroke_mm', self._p_max_piston_stroke_mm[0])])
 
     @property
     def syringe_params(self):
