@@ -46,6 +46,21 @@ def read_config():
     return cfg
 
 
+def delete_config():
+    """
+    Delete the configuration file.
+
+    """
+    os.remove(PYQMIX_CONFIG_FILE)
+
+    # Try to remove config directory. Only succeeds of directory
+    # is empty.
+    try:
+        os.rmdir(PYQMIX_CONFIG_DIR)
+    except OSError:
+        pass
+
+
 def set_qmix_config_dir(d):
     """
     Specify the location of the directory containing the Qmix configurations.
