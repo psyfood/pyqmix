@@ -243,7 +243,7 @@ class QmixPump(object):
         """
         return self._call('LCP_GetNoOfPumps')
 
-    def set_volume_unit(self, prefix=None, unit=None):
+    def set_volume_unit(self, prefix='milli', unit='litres'):
         """
         Set the default volume unit.
 
@@ -314,7 +314,8 @@ class QmixPump(object):
     def volume_unit(self, volume_unit):
         self.set_volume_unit(**volume_unit)
 
-    def set_flow_unit(self, prefix=None, volume_unit=None, time_unit=None):
+    def set_flow_unit(self, prefix='milli', volume_unit='litres',
+                      time_unit='per_second'):
         """
         Set the flow unit for a certain pump.
 
