@@ -4,12 +4,13 @@
 import os
 from collections import OrderedDict
 from ruamel.yaml import YAML
+from appdirs import user_config_dir
 
 yaml = YAML()
 yaml.default_flow_style = False
 
 
-PYQMIX_CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.pyqmix')
+PYQMIX_CONFIG_DIR = user_config_dir(appname='pyqmix', appauthor=False)
 PYQMIX_CONFIG_FILE = os.path.join(PYQMIX_CONFIG_DIR, 'config.yaml')
 
 
