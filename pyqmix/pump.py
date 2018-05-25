@@ -72,6 +72,7 @@ class QmixPump(object):
 
         self._p_volume_prefix = self._ffi.new('int *')
         self._p_volume_unit = self._ffi.new('int *')
+        self._p_volume_max = self._ffi.new('double *')
 
         # Syringe dimensions.
         self._p_inner_diameter_mm  = self._ffi.new('double *')
@@ -167,6 +168,13 @@ class QmixPump(object):
 
         """
         return self._call('LCP_Enable', self._handle[0])
+
+    def disable(self):
+        """
+        Deactivate the pump drive.
+
+        """
+        return self._call('LCP_Disable', self._handle[0])
 
     @property
     def is_in_fault_state(self):
@@ -324,6 +332,11 @@ class QmixPump(object):
     def volume_unit(self, volume_unit):
         self.set_volume_unit(**volume_unit)
 
+    @property
+    def volume_max(self):
+        self._call('LCP_GetVolumeMax', self._handle[0], self._p_volume_max)
+        return self._p_volume_max[0]
+
     def set_flow_unit(self, prefix='milli', volume_unit='litres',
                       time_unit='per_second'):
         """
@@ -476,7 +489,6 @@ class QmixPump(object):
     @syringe_params.setter
     def syringe_params(self, params):
         self.set_syringe_params(**params)
-
 
     @property
     def max_flow_rate(self):
