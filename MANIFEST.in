@@ -1,0 +1,2 @@
+include versioneer.py
+include pyqmix/_version.py

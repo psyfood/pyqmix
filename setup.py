@@ -3,6 +3,7 @@
 
 
 import sys
+import versioneer
 
 try:
     from setuptools import setup, find_packages
@@ -15,7 +16,8 @@ exec(open('pyqmix/version.py').read())
 
 setup(
     name='pyqmix',
-    version=__version__,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author=('Lorenzo Alfine <lorenzo.alfine@gmail.com>,'
             'Richard Höchenberger <richard.hoechenberger@gmail.com>'),
     url='https://github.com/psyfood/Gustometer',
