@@ -4,7 +4,9 @@
 import os
 import time
 import sys
+import atexit
 from cffi import FFI
+from collections import OrderedDict
 
 if sys.version_info[0] < 3:
     # Python 2 compatibility; requires `future` package.
@@ -19,50 +21,64 @@ from .headers import PUMP_HEADER
 class QmixPump(object):
     """
     Qmix pump interface.
-
-    Parameters
-    ----------
-    index : int, or None
-        Index of the pump to access. It is related with the config files.
-        First pump has ``index=0``, second has ``index=1`` and so on.
-        Takes precedence over the `name` parameter.
-
-    name : str
-        The name of the pump to initialize. Will be ignored if `index` is
-        not `None`.
-
-    auto_enable : bool
-        Whether to enable (i.e., activate) the pump on object instantiation.
-
     """
-
-    def __init__(self, index=None, name='', external_valves=None,
+    def __init__(self, index, name='', external_valves=None,
+                 restore_drive_pos_counter=True,
                  auto_enable=True):
-        if index is None and name == '':
-            raise ValueError('Please specify a valid pump index or name')
-        else:
-            self.index = index
-            self.name = name
+        """
+        Parameters
+        ----------
+        index : int
+            Index of the pump to access. It is related with the config files.
+            First pump has ``index=0``, second has ``index=1`` and so on.
+            Takes precedence over the `name` parameter.
 
-        self.dll_file = os.path.join(config.DLL_DIR, 'labbCAN_Pump_API.dll')
+        name : str
+            The name of the pump.
+
+        restore_drive_pos_counter : bool
+            Whether to restore the pump drive position counter from the pyqmix
+            config file.
+
+        auto_enable : bool
+            Whether to enable (i.e., activate) the pump on object instantiation.
+
+        """
+        cfg = config.read_config()
+        dll_dir = cfg.get('qmix_dll_dir', None)
+        if dll_dir is None:
+            self.dll_file = 'labbCAN_Pump_API.dll'
+        else:
+            self.dll_file = os.path.join(dll_dir, 'labbCAN_Pump_API.dll')
 
         self._ffi = FFI()
         self._ffi.cdef(PUMP_HEADER)
         self._dll = self._ffi.dlopen(self.dll_file)
 
-        self._handle = self._ffi.new('dev_hdl *', 0)
+        self.index = index
+        self._name = name
 
-        if self.index is not None:
-            self._call('LCP_GetPumpHandle', self.index, self._handle)
-        else:
-            self._call('LCP_LookupPumpByName',
-                       bytes(self.name, 'utf8'),
-                       self._handle)
+        self._handle = self._ffi.new('dev_hdl *', 0)
+        self._call('LCP_GetPumpHandle', self.index, self._handle)
 
         self._flow_rate_max = self._ffi.new('double *')
         self._p_fill_level = self._ffi.new('double *')
         self._p_dosed_volume = self._ffi.new('double *')
         self._p_flow_rate = self._ffi.new('double *')
+
+        self._p_flow_prefix = self._ffi.new('int *')
+        self._p_flow_volume_unit = self._ffi.new('int *')
+        self._p_flow_time_unit = self._ffi.new('int *')
+
+        self._p_volume_prefix = self._ffi.new('int *')
+        self._p_volume_unit = self._ffi.new('int *')
+        self._p_volume_max = self._ffi.new('double *')
+
+        # Syringe dimensions.
+        self._p_inner_diameter_mm  = self._ffi.new('double *')
+        self._p_max_piston_stroke_mm = self._ffi.new('double *')
+
+        self._p_drive_pos_counter = self._ffi.new('long *')
 
         self._valve_handle = self._ffi.new('dev_hdl *', 0)
         self._call('LCP_GetValveHandle', self._handle[0], self._valve_handle)
@@ -78,17 +94,57 @@ class QmixPump(object):
         else:
             self.ext_valves = external_valves
 
-        self.name = name
-
         self.auto_enable = auto_enable
         if self.auto_enable:
             self.enable()
+
+        try:  # Try to restore settings from configuration file.
+            pump_config = cfg['pumps'][self.index]
+
+            # We get back CommentedOrderedMap's, so convert to dicts.
+            volume_unit = dict(pump_config['volume_unit'])
+            flow_unit = dict(pump_config['flow_unit'])
+            syringe_params = dict(pump_config['syringe_params'])
+
+            name = pump_config['name']
+
+            if restore_drive_pos_counter:
+                drive_pos_counter = pump_config['drive_pos_counter']
+            else:
+                drive_pos_counter = self.drive_pos_counter
+
+            if self._name == '':
+                self._name = name
+
+            self.volume_unit = volume_unit
+            self.flow_unit = flow_unit
+            self.syringe_params = syringe_params
+            self.drive_pos_counter = drive_pos_counter
+        except KeyError:  # Write default values to configuration file.
+            config.add_pump(self.index)
+            config.set_pump_name(self.index, self._name)
+            config.set_pump_volume_unit(self.index, **self.volume_unit)
+            config.set_pump_flow_unit(self.index, **self.flow_unit)
+            config.set_pump_syringe_params(self.index, **self.syringe_params)
+            config.set_pump_drive_pos_counter(self.index,
+                                              self.drive_pos_counter)
+
+        atexit.register(self.save_drive_pos_counter)
 
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
         r = func(*args)
         r = CHK(r, func_name, *args)
         return r
+
+    @property
+    def name (self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+        config.set_pump_name(self.index, name)
 
     @property
     def is_enabled(self):
@@ -112,6 +168,13 @@ class QmixPump(object):
 
         """
         return self._call('LCP_Enable', self._handle[0])
+
+    def disable(self):
+        """
+        Deactivate the pump drive.
+
+        """
+        return self._call('LCP_Disable', self._handle[0])
 
     @property
     def is_in_fault_state(self):
@@ -164,7 +227,7 @@ class QmixPump(object):
         else:
             return True
 
-    def calibrate(self, blocking_wait=True):
+    def calibrate(self, blocking_wait=False):
         """
         Executes a reference move for a syringe pump.
 
@@ -197,7 +260,7 @@ class QmixPump(object):
         """
         return self._call('LCP_GetNoOfPumps')
 
-    def set_volume_unit(self, prefix=None, unit=None):
+    def set_volume_unit(self, prefix='milli', unit='litres'):
         """
         Set the default volume unit.
 
@@ -218,7 +281,64 @@ class QmixPump(object):
                    getattr(self._dll, prefix.upper()),
                    getattr(self._dll, unit.upper()))
 
-    def set_flow_unit(self, prefix=None, volume_unit=None, time_unit=None):
+        config.set_pump_volume_unit(self.index, prefix=prefix, unit=unit)
+
+    def get_volume_unit(self):
+        """
+        Return the currently set default volume unit.
+
+        Returns
+        -------
+        OrderedDict
+            A dictionary with the keys `prefix` and `unit`.
+
+        """
+        self._call('LCP_GetVolumeUnit', self._handle[0],
+                   self._p_volume_prefix, self._p_volume_unit)
+
+        if self._p_volume_prefix[0] == self._dll.MICRO:
+            prefix = 'micro'
+        elif self._p_volume_prefix[0] == self._dll.MILLI:
+            prefix = 'milli'
+        elif self._p_volume_prefix[0] == self._dll.CENTI:
+            prefix = 'centi'
+        elif self._p_volume_prefix[0] == self._dll.DECI:
+            prefix = 'deci'
+        else:
+            raise RuntimeError('Invalid volume unit prefix retrieved.')
+
+        if self._p_volume_unit[0] == self._dll.LITRES:
+            unit = 'litres'
+        else:
+            raise RuntimeError('Invalid flow volume unit retrieved.')
+
+        return OrderedDict([('prefix', prefix),
+                            ('unit', unit)])
+
+    @property
+    def volume_unit(self):
+        """
+        The currently set default volume unit.
+
+        Returns
+        -------
+        OrderedDict
+            A dictionary with the keys `prefix` and `unit`.
+
+        """
+        return self.get_volume_unit()
+
+    @volume_unit.setter
+    def volume_unit(self, volume_unit):
+        self.set_volume_unit(**volume_unit)
+
+    @property
+    def volume_max(self):
+        self._call('LCP_GetVolumeMax', self._handle[0], self._p_volume_max)
+        return self._p_volume_max[0]
+
+    def set_flow_unit(self, prefix='milli', volume_unit='litres',
+                      time_unit='per_second'):
         """
         Set the flow unit for a certain pump.
 
@@ -228,8 +348,8 @@ class QmixPump(object):
         Parameters
         ----------
         prefix : str
-            The prefix of the SIunit:
-            ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+            The prefix of the SI unit:
+            ``centi``, ``deci``, ``milli``, ``micro``.
 
         volume_unit : str
             The volume unit identifier: ``litres``.
@@ -244,9 +364,71 @@ class QmixPump(object):
                    getattr(self._dll, volume_unit.upper()),
                    getattr(self._dll, time_unit.upper()))
 
-    # TODO: find reasonable default parameters
-    def set_syringe_param(self, inner_diameter_mm=23.03,
-                          max_piston_stroke_mm=60):
+        config.set_pump_flow_unit(self.index, prefix=prefix,
+                                  volume_unit=volume_unit, time_unit=time_unit)
+
+    def get_flow_unit(self):
+        """
+        Return the currently set flow unit.
+
+        Returns
+        -------
+        OrderedDict
+            A dictionary with the keys `prefix`, `volume_unit`, and
+            `time_unit`.
+
+        """
+        self._call('LCP_GetFlowUnit', self._handle[0], self._p_flow_prefix,
+                   self._p_flow_volume_unit, self._p_flow_time_unit)
+
+        if self._p_flow_prefix[0] == self._dll.MICRO:
+            prefix = 'micro'
+        elif self._p_flow_prefix[0] == self._dll.MILLI:
+            prefix = 'milli'
+        elif self._p_flow_prefix[0] == self._dll.CENTI:
+            prefix = 'centi'
+        elif self._p_flow_prefix[0] == self._dll.DECI:
+            prefix = 'deci'
+        else:
+            raise RuntimeError('Invalid flow unit prefix retrieved.')
+
+        if self._p_flow_volume_unit[0] == self._dll.LITRES:
+            volume_unit = 'litres'
+        else:
+            raise RuntimeError('Invalid flow volume unit retrieved.')
+
+        if self._p_flow_time_unit[0] == self._dll.PER_SECOND:
+            time_unit = 'per_second'
+        elif self._p_flow_time_unit[0] == self._dll.PER_MINUTE:
+            time_unit = 'per_minute'
+        elif self._p_flow_time_unit[0] == self._dll.PER_HOUR:
+            time_unit = 'per_hour'
+        else:
+            raise RuntimeError('Invalid flow time unit retrieved.')
+
+        return OrderedDict([('prefix', prefix),
+                            ('volume_unit', volume_unit),
+                            ('time_unit', time_unit)])
+
+    @property
+    def flow_unit(self):
+        """
+        The currently set flow unit.
+
+        Returns
+        -------
+        OrderedDict
+            A dictionary with the keys `prefix`, `volume_unit`, and
+            `time_unit`.
+        """
+        return self.get_flow_unit()
+
+    @flow_unit.setter
+    def flow_unit(self, flow_unit):
+        self.set_flow_unit(**flow_unit)
+
+    def set_syringe_params(self, inner_diameter_mm=32.5735,
+                           max_piston_stroke_mm=60):
         """
         Set syringe properties.
 
@@ -257,19 +439,56 @@ class QmixPump(object):
         Parameters
         ----------
         inner_diameter_mm : float
-            Inner diameter of the syringe tube in millimetres. Default is
-            23.03 (mm) that indicates a 25 ml syringe. For the 50 ml syringe
-            use 32.5 (mm).
+            Inner diameter of the syringe tube in millimetres.
 
         max_piston_stroke_mm : float
             The maximum piston stroke defines the maximum position the piston
-            can be moved to before it slips out of the syringe tube. The maximum
-            piston stroke limits the maximum travel range of the syringe pump
-            pusher.
+            can be moved to before it slips out of the syringe tube.
+            The maximum piston stroke limits the maximum travel range of the
+            syringe pump pusher.
 
         """
         self._call('LCP_SetSyringeParam', self._handle[0], inner_diameter_mm,
                    max_piston_stroke_mm)
+
+        config.set_pump_syringe_params(
+            self.index,
+            inner_diameter_mm=inner_diameter_mm,
+            max_piston_stroke_mm=max_piston_stroke_mm)
+
+    def get_syringe_params(self):
+        """
+        Get the currently set syringe properties.
+
+        Returns
+        -------
+        OrderedDict
+            Returns a dictionary with the keys `inner_diameter_mm` and
+            `max_piston_stroke_mm`.
+        """
+        self._call('LCP_GetSyringeParam', self._handle[0],
+                   self._p_inner_diameter_mm, self._p_max_piston_stroke_mm)
+
+        return OrderedDict(
+            [('inner_diameter_mm', self._p_inner_diameter_mm[0]),
+             ('max_piston_stroke_mm', self._p_max_piston_stroke_mm[0])])
+
+    @property
+    def syringe_params(self):
+        """
+        The currently set syringe properties.
+
+        Returns
+        -------
+        OrderedDict
+            Returns a dictionary with the keys `inner_diameter_mm` and
+            `max_piston_stroke_mm`.
+        """
+        return self.get_syringe_params()
+
+    @syringe_params.setter
+    def syringe_params(self, params):
+        self.set_syringe_params(**params)
 
     @property
     def max_flow_rate(self):
@@ -439,18 +658,6 @@ class QmixPump(object):
         self._call('LCP_GetDosedVolume', self._handle[0], self._p_dosed_volume)
         return self._p_dosed_volume[0]
 
-    @property
-    def fill_level(self):
-        """
-        Returns the current fill level of the pump.
-
-        Notes
-        -----
-        This is identical to a call to :func:~`pyqmix.QmixPump.get_fill_level`.
-        """
-
-        return self.get_fill_level()
-
     def get_fill_level(self):
         """
         Returns the current fill level of the pump.
@@ -463,6 +670,18 @@ class QmixPump(object):
         """
         self._call('LCP_GetFillLevel', self._handle[0], self._p_fill_level)
         return self._p_fill_level[0]
+
+    @property
+    def fill_level(self):
+        """
+        Returns the current fill level of the pump.
+
+        Notes
+        -----
+        This is identical to a call to :func:~`pyqmix.QmixPump.get_fill_level`.
+
+        """
+        return self.get_fill_level()
 
     @property
     def current_flow_rate(self):
@@ -528,6 +747,40 @@ class QmixPump(object):
     def remove_external_valve(self, name):
         del self.ext_valves[name]
 
+    @property
+    def drive_pos_counter(self):
+        """
+        Current drive position counter of the pump.
+
+        The position counter gets reset to zero when the pump system is powered
+        off. To avoid having to recalibrate the system (i.e., doing a reference
+        move, which requires removal of the syringes), this function may be
+        used to save the current drive position counter to the configuration
+        file, from where it can be safely restored once the system is powered
+        on again.
+
+        Returns
+        -------
+        int
+            The current value of the drive position counter.
+
+        """
+        self._call('LCP_GetDrivePosCnt', self._handle[0],
+                   self._p_drive_pos_counter)
+        return self._p_drive_pos_counter[0]
+
+    @drive_pos_counter.setter
+    def drive_pos_counter(self, value):
+        value = int(value)
+        self._call('LCP_RestoreDrivePosCnt', self._handle[0], value)
+
+    def save_drive_pos_counter(self):
+        """
+        Save the current drive position counter to the configuration file.
+
+        """
+        config.set_pump_drive_pos_counter(self.index, self.drive_pos_counter)
+
 
 def init_pump(params):
     """Convenience function to initialize and calibrate a pump.
@@ -548,7 +801,7 @@ def init_pump(params):
     pump = QmixPump(index=params['index'])
     pump.set_flow_unit(**params['flow'])
     pump.set_volume_unit(**params['volume'])
-    pump.set_syringe_param(**params['syringe'])
+    pump.set_syringe_params(**params['syringe'])
     pump.calibrate(blocking_wait=False)
 
     return pump

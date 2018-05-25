@@ -18,27 +18,32 @@ class QmixDigitalIO(object):
     """
     Qmix IO-B diglital I/O channel.
 
-    Parameters
-    ----------
-    index : int
-        Index of the DIO channel. It is related with the config files.
-        First channel has ``index=0``, second has ``index=1`` and so on.
-        Takes precedence over the `name` parameter.
-
-    name : str
-        The name of the DIO channel to initialize. Will be ignored if `index` is
-        not `None`.
-
     """
-
     def __init__(self, index=None, name=''):
+        """
+        Parameters
+        ----------
+        index : int
+            Index of the DIO channel. It is related with the config files.
+            First channel has ``index=0``, second has ``index=1`` and so on.
+            Takes precedence over the `name` parameter.
+
+        name : str
+            The name of the DIO channel to initialize. Will be ignored if `index` is
+            not `None`.
+        """
         if index is None and name == '':
             raise ValueError('Please specify a valid DIO index or name.')
         else:
             self.index = index
             self.name = name
 
-        self.dll_file = os.path.join(config.DLL_DIR, 'labbCAN_DigIO_API.dll')
+        dll_dir = config.read_config().get('qmix_dll_dir', None)
+        if dll_dir is None:
+            self.dll_file = 'labbCAN_DigIO_API.dll'
+        else:
+            self.dll_file = os.path.join(dll_dir, 'labbCAN_DigIO_API.dll')
+
         self._ffi = FFI()
         self._ffi.cdef(DIGITAL_IO_HEADER)
 

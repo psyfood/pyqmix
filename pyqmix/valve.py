@@ -43,7 +43,11 @@ class QmixValve(object):
             self.name = name
             self.handle = handle
 
-        self.dll_file = os.path.join(config.DLL_DIR, 'labbCAN_Valve_API.dll')
+        dll_dir = config.read_config().get('qmix_dll_dir', None)
+        if dll_dir is None:
+            self.dll_file = 'labbCAN_Valve_API.dll'
+        else:
+            self.dll_file = os.path.join(dll_dir, 'labbCAN_Valve_API.dll')
 
         self._ffi = FFI()
         self._ffi.cdef(VALVE_HEADER)
@@ -59,8 +63,8 @@ class QmixValve(object):
         else:
             self._handle = handle
 
-        self.aspirate_pos = 0
-        self.dispense_pos = 1
+        self.aspirate_pos = 1
+        self.dispense_pos = 0
 
         self.name = name
 
@@ -169,8 +173,8 @@ class QmixExternalValve(QmixValve):
         else:
             self._dio = QmixDigitalIO(name=self.name)
 
-        self.aspirate_pos = 0
-        self.dispense_pos = 1
+        self.aspirate_pos = 1
+        self.dispense_pos = 0
 
     @property
     def number_of_positions(self):

@@ -1,3 +1,10 @@
+2018-05-25
+----------
+* Support for a configuration file
+* Don't do a blocking wait when calibrating pumps by default
+* More example scripts
+* Add support for several new Qmix SDK functions
+
 2018-02-21
 ----------
 * `QmixBus` gained `auto_open` and `auto_start` init parameters

@@ -17,43 +17,48 @@ from .headers import BUS_HEADER
 
 class QmixBus(object):
     """
-    It establishes the communication between the bus and the devices.
+    Qmix bus interface.
 
-    First class that has to be initialized.
+    This interface establishes a connection with the labbCAN bus used for
+    communication with all attached devices. Accordingly, has to be
+    initialized before any hardware can be accessed.
 
     Parameters
     ----------
-    config_dir : str
-        Absolute path to the folder that contains the device configuration files
-        (XML config files).
 
-    dll_dir : str
-        Absolute path to the folder that contains Qmix .dll files.
+    auto_open : bool
+        Whether to open the labbCAN bus automatically on object instantiation.
 
-    auto_open, auto_start : bool
-        Whether to open and start the bus connection automatically on
-        object instatiation.
+    auto_start : bool
+        Whether to start the CAN bus communication automatically on object
+        instantiation. Since the bus needs to be opened before communication
+        can commence, setting `auto_start=True` will always open the bus,
+        regardless of the `auto_open` parameter specified.
 
     """
 
-    def __init__(self, config_dir=None, dll_dir=None, auto_open=True,
-                 auto_start=True):
-        if config.DLL_DIR is None:
-            if dll_dir is None:
-                raise ValueError('No DLL directory specified.')
-            else:
-                config.DLL_DIR = dll_dir
+    def __init__(self, auto_open=True, auto_start=True):
+        dll_dir = config.read_config().get('qmix_dll_dir')
+        if dll_dir is None:
+            self.dll_file = 'labbCAN_Bus_API.dll'
+        else:
+            os.environ['PATH'] += os.pathsep + dll_dir
+            self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
 
-        self.dll_dir = config.DLL_DIR
-        self.dll_file = os.path.join(self.dll_dir, 'labbCAN_Bus_API.dll')
+        header_dir = config.read_config().get('qmix_dll_dir')
+        if header_dir is not None:
+            self.header_dir = header_dir
+        else:
+            msg = 'Please specify a Qmix SDK header dir.'
+            raise ValueError(msg)
 
-        if config.CONFIG_DIR is None:
-            if config_dir is None:
-                raise ValueError('No Qmix configuration directory specified.')
-            else:
-                config.CONFIG_DIR = config_dir
-
-        self.config_dir = config.CONFIG_DIR
+        config_dir = config.read_config().get('qmix_config_dir')
+        if config_dir is not None:
+            self.config_dir = config_dir
+        else:
+            msg = ('Please specify the Qmix configuration directory via '
+                   'pyqmix.config.set_qmix_config_dir() first.')
+            raise RuntimeError(msg)
 
         self.auto_open = auto_open
         self.auto_start = auto_start
@@ -68,6 +73,8 @@ class QmixBus(object):
             self.open()
 
         if self.auto_start:
+            if not self.is_open:
+                self.open()
             self.start()
 
     def __del__(self):
@@ -109,6 +116,11 @@ class QmixBus(object):
         invoked.
 
         """
+        if not self.is_open:
+            msg = ('Bus needs to be opened before communication can start.'
+                   'Call `QmixBus.open()` first.')
+            raise RuntimeError(msg)
+
         self._call('LCB_Start')
         time.sleep(1)
         self.is_started = True
