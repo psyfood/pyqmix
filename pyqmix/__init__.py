@@ -15,3 +15,7 @@ from .dio import QmixDigitalIO
 
 
 __all__ = [QmixBus, QmixPump, QmixValve, QmixExternalValve, QmixDigitalIO]
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
