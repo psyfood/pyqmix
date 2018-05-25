@@ -21,7 +21,7 @@ setup(
     url='https://github.com/psyfood/Gustometer',
     packages=find_packages(),
     license='GPL v3',
-    description='TODO',
+    description='A wrapper for the Cetoni Qmix SDK.',
     long_description=open('README.md').read(),
     install_requires=['cffi', 'ruamel.yaml', 'appdirs'],
     classifiers=['Intended Audience :: Science/Research',

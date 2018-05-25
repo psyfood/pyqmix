@@ -9,6 +9,10 @@ from .headers import ERROR_HEADER
 
 
 class QmixError(object):
+    """
+    Qmix SDK error messages.
+
+    """
     def __init__(self, error_number):
         dll_dir = config.read_config().get('qmix_dll_dir', None)
         if dll_dir is None:

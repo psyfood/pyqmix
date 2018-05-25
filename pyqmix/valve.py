@@ -34,7 +34,6 @@ class QmixValve(object):
         :func:~`pyqmix.QmixPump.valve_handle`.
 
     """
-
     def __init__(self, index=None, name='', handle=None):
         if index is None and name == '' and handle is None:
             raise ValueError('Please specify a valid valve index or name.')
@@ -71,8 +70,7 @@ class QmixValve(object):
     def _call(self, func_name, *args):
         func = getattr(self._dll, func_name)
         r = func(*args)
-        r = CHK(r, func_name, *args)
-        return r
+        return CHK(r)
 
     @property
     def number_of_positions(self):
@@ -160,7 +158,6 @@ class QmixExternalValve(QmixValve):
         not `None`.
 
     """
-
     def __init__(self, index=None, name=''):
         if index is None and name == '':
             raise ValueError('Please specify a valid DIO index or name')
