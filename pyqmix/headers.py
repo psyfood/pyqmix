@@ -59,7 +59,7 @@ PUMP_HEADER = """
     long LCP_GetFlowUnit(dev_hdl hPump, int *pPrefix, int *pVolumeUnit,
         int *pTimeUnit);		
     long LCP_GetVolumeUnit(dev_hdl hPump, int *pPrefix, int *pVolumeUnit);
-    long LCP_GetVolumeMax(dev_hdl hPump, double *VolumeMax)
+    long LCP_GetVolumeMax(dev_hdl hPump, double *VolumeMax);
     long LCP_StopPumping(dev_hdl hPump);
     long LCP_StopAllPumps();
     long LCP_GetValveHandle(dev_hdl hPump, dev_hdl* ValveHandle);
