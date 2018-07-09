@@ -1,2 +1,4 @@
 cffi
+ruamel.yaml
+appdirs
 -e .

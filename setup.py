@@ -10,9 +10,6 @@ try:
 except ImportError:
     raise sys.exit('Could not import setuptools.')
 
-# Get version info.
-# This basically imports __version__ from version.py.
-exec(open('pyqmix/version.py').read())
 
 setup(
     name='pyqmix',
