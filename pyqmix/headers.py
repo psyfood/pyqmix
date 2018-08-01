@@ -4,7 +4,8 @@
 BUS_HEADER = """
     typedef long long labb_hdl;    
     typedef long long dev_hdl;    
-    long LCB_Open(const char* pDeviceConfigPath);    
+    long LCB_Open(const char* pDeviceConfigPath,
+                  const char* PluginSearchPath);
     long LCB_Start();    
     long LCB_Stop();    
     long LCB_Close();

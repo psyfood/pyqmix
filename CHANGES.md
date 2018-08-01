@@ -1,3 +1,7 @@
+2018-08-01
+----------
+* Support latest Qmix SDK
+
 2018-05-25
 ----------
 * Support for a configuration file
