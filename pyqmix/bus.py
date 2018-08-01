@@ -45,13 +45,6 @@ class QmixBus(object):
             os.environ['PATH'] += os.pathsep + dll_dir
             self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
 
-        header_dir = config.read_config().get('qmix_dll_dir')
-        if header_dir is not None:
-            self.header_dir = header_dir
-        else:
-            msg = 'Please specify a Qmix SDK header dir.'
-            raise ValueError(msg)
-
         config_dir = config.read_config().get('qmix_config_dir')
         if config_dir is not None:
             self.config_dir = config_dir
