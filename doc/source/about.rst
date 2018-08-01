@@ -1,5 +1,5 @@
 About pyqmix
-==============
+============
 
 .. automodule:: pyqmix
     :no-members:
