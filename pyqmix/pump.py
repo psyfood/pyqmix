@@ -23,7 +23,7 @@ class QmixPump(object):
     Qmix pump interface.
     """
     def __init__(self, index, name='', external_valves=None,
-                 restore_drive_pos_counter=True,
+                 restore_drive_pos_counter=False,
                  auto_enable=True):
         """
         Parameters

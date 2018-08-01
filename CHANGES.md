@@ -1,3 +1,8 @@
+2018-08-01
+----------
+* Support latest Qmix SDK
+* Do not restore pump drive position counter by default
+
 2018-05-25
 ----------
 * Support for a configuration file

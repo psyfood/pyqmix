@@ -45,13 +45,6 @@ class QmixBus(object):
             os.environ['PATH'] += os.pathsep + dll_dir
             self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
 
-        header_dir = config.read_config().get('qmix_dll_dir')
-        if header_dir is not None:
-            self.header_dir = header_dir
-        else:
-            msg = 'Please specify a Qmix SDK header dir.'
-            raise ValueError(msg)
-
         config_dir = config.read_config().get('qmix_config_dir')
         if config_dir is not None:
             self.config_dir = config_dir
@@ -66,6 +59,13 @@ class QmixBus(object):
         self._ffi = FFI()
         self._ffi.cdef(BUS_HEADER)
         self._dll = self._ffi.dlopen(self.dll_file)
+
+        self._p_config_dir = self._ffi.new(
+            'char[]',
+            bytes(self.config_dir, 'utf8'))
+
+        self._p_plugin_search_path = self._ffi.NULL
+
         self.is_open = False
         self.is_started = False
 
@@ -94,7 +94,9 @@ class QmixBus(object):
         scans for connected devices.
 
         """
-        self._call('LCB_Open', bytes(self.config_dir, 'utf8'))
+        self._call('LCB_Open',
+                   self._p_config_dir,
+                   self._p_plugin_search_path)
         time.sleep(1)
         self.is_open = True
 
