@@ -1,3 +1,8 @@
+2018-08-02
+----------
+* Add `config` module to `pyqmix.__all__`
+* Remove Qmix SDK header directory config option
+
 2018-08-01
 ----------
 * Support latest Qmix SDK
