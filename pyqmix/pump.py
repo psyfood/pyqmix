@@ -121,6 +121,9 @@ class QmixPump(object):
             self.syringe_params = syringe_params
             self.drive_pos_counter = drive_pos_counter
         except KeyError:  # Write default values to configuration file.
+            self.set_flow_unit()
+            self.set_volume_unit()
+
             config.add_pump(self.index)
             config.set_pump_name(self.index, self._name)
             config.set_pump_volume_unit(self.index, **self.volume_unit)
