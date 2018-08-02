@@ -10,9 +10,11 @@ from .bus import QmixBus
 from .pump import QmixPump
 from .valve import QmixValve, QmixExternalValve
 from .dio import QmixDigitalIO
+from . import config
 
 
-__all__ = [QmixBus, QmixPump, QmixValve, QmixExternalValve, QmixDigitalIO]
+__all__ = [QmixBus, QmixPump, QmixValve, QmixExternalValve, QmixDigitalIO,
+           config]
 
 from ._version import get_versions
 __version__ = get_versions()['version']

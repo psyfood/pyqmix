@@ -1,3 +1,7 @@
+2018-08-02
+----------
+* Add `config` module to `pyqmix.__all__`
+
 2018-08-01
 ----------
 * Support latest Qmix SDK
