@@ -4,7 +4,7 @@
 * Remove Qmix SDK header directory config option
 * Add convenience method `QmixPump.set_syringe_params_by_type()`
   to set syringe parameters by specifying a syringe type
-
+* Set default flow and volume units when instantiation a `QmixPump`
 
 2018-08-01
 ----------
