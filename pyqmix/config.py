@@ -42,7 +42,6 @@ def read_config():
                 raise
 
         cfg = OrderedDict([('qmix_dll_dir', ''),
-                           ('qmix_header_dir', ''),
                            ('qmix_config_dir', ''),
                            ('pumps', OrderedDict())])
 
@@ -93,25 +92,6 @@ def set_qmix_dll_dir(d):
     """
     cfg = read_config()
     cfg['qmix_dll_dir'] = d
-
-    with open(PYQMIX_CONFIG_FILE, 'w') as f:
-        yaml.dump(cfg, f)
-
-
-def set_qmix_header_dir(d):
-    """
-    Specify the location of the directory containing the Qmix SDK header (.h)
-    files.
-
-    Parameters
-    ----------
-    d : string
-        Th Qmix SDK header directory. Must be an absolute path. The directory
-        is typically called `include`.
-
-    """
-    cfg = read_config()
-    cfg['qmix_header_dir'] = d
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
