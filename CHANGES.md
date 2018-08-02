@@ -2,11 +2,16 @@
 ----------
 * Add `config` module to `pyqmix.__all__`
 * Remove Qmix SDK header directory config option
+* Add convenience method `QmixPump.set_syringe_params_by_type()`
+  to set syringe parameters by specifying a syringe type
+
 
 2018-08-01
 ----------
 * Support latest Qmix SDK
 * Do not restore pump drive position counter by default
+* Add convenience method `QmixPump.set_syringe_params_by_type()`
+  to set syringe parameters by specifying a syringe type
 
 2018-05-25
 ----------

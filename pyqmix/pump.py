@@ -455,6 +455,42 @@ class QmixPump(object):
             inner_diameter_mm=inner_diameter_mm,
             max_piston_stroke_mm=max_piston_stroke_mm)
 
+    def set_syringe_params_by_type(self, syringe_type='50 mL glass'):
+        """
+        Convenience method to set syringe parameters based on syringe type.
+
+        Parameters
+        ----------
+        syringe_type : string
+            Any of `25 mL glass` and `50 mL glass`.
+
+        Notes
+        -----
+        This method simply looks up pre-defined syringe parameters (inner
+        diameter and max. piston stroke), and passes these parameters to
+        :func:~`pyqmix.QmixPump.set_syringe_params`.
+
+        """
+        syringes = {'25 mL glass': dict(inner_diameter_mm=23.03294,
+                                        max_piston_stroke_mm=60),
+                    '50 mL glass': dict(inner_diameter_mm=32.57350,
+                                        max_piston_stroke=60)}
+
+        if syringe_type not in syringes.keys():
+            raise ValueError('Unknown syringe type.')
+        else:
+            syringe = syringes[syringe_type]
+
+        self._call('LCP_SetSyringeParam',
+                   self._handle[0],
+                   syringe['inner_diameter_mm'],
+                   syringe['max_piston_stroke_mm'])
+
+        config.set_pump_syringe_params(
+            self.index,
+            inner_diameter_mm=syringe['inner_diameter_mm'],
+            max_piston_stroke_mm=syringe['max_piston_stroke_mm'])
+
     def get_syringe_params(self):
         """
         Get the currently set syringe properties.
