@@ -477,7 +477,7 @@ class QmixPump(object):
         syringes = {'25 mL glass': dict(inner_diameter_mm=23.03294,
                                         max_piston_stroke_mm=60),
                     '50 mL glass': dict(inner_diameter_mm=32.57350,
-                                        max_piston_stroke=60)}
+                                        max_piston_stroke_mm=60)}
 
         if syringe_type not in syringes.keys():
             raise ValueError('Unknown syringe type.')
