@@ -121,16 +121,14 @@ class QmixPump(object):
             self.syringe_params = syringe_params
             self.drive_pos_counter = drive_pos_counter
         except KeyError:  # Write default values to configuration file.
-            self.set_flow_unit()
-            self.set_volume_unit()
-
             config.add_pump(self.index)
             config.set_pump_name(self.index, self._name)
-            config.set_pump_volume_unit(self.index, **self.volume_unit)
-            config.set_pump_flow_unit(self.index, **self.flow_unit)
-            config.set_pump_syringe_params(self.index, **self.syringe_params)
             config.set_pump_drive_pos_counter(self.index,
                                               self.drive_pos_counter)
+
+            self.set_flow_unit()
+            self.set_volume_unit()
+            self.set_syringe_params_by_type('50 mL glass')
 
         atexit.register(self.save_drive_pos_counter)
 
@@ -483,16 +481,7 @@ class QmixPump(object):
             raise ValueError('Unknown syringe type.')
         else:
             syringe = syringes[syringe_type]
-
-        self._call('LCP_SetSyringeParam',
-                   self._handle[0],
-                   syringe['inner_diameter_mm'],
-                   syringe['max_piston_stroke_mm'])
-
-        config.set_pump_syringe_params(
-            self.index,
-            inner_diameter_mm=syringe['inner_diameter_mm'],
-            max_piston_stroke_mm=syringe['max_piston_stroke_mm'])
+            self.set_syringe_params(**syringe)
 
     def get_syringe_params(self):
         """
