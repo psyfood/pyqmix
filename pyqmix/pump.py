@@ -653,6 +653,64 @@ class QmixPump(object):
             while self.is_pumping:
                 time.sleep(0.0005)
 
+    def fill(self, flow_rate, blocking_wait=False):
+        """
+        Fill the syringe.
+
+        Parameters
+        ----------
+        flow_rate : float > 0
+            The flow rate to use.
+
+        blocking_wait : bool
+            Whether to block until done.
+
+        Raises
+        ------
+        ValueError
+            If the specified flow rate is non-positive.
+
+        Notes
+        -----
+        This is a convenience method that simply passes the specified
+        parameters to :func:~`pyqmix.QmixPump.generate_flow`. Note that
+        `flow_rate` is multiplied by `-1` to ensure the syringe is being
+        filled.
+
+        """
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+
+        self.generate_flow(-flow_rate, blocking_wait=blocking_wait)
+
+    def empty(self, flow_rate, blocking_wait=False):
+        """
+        Empty the syringe.
+
+        Parameters
+        ----------
+        flow_rate : float > 0
+            The flow rate to use.
+
+        blocking_wait : bool
+            Whether to block until done.
+
+        Raises
+        ------
+        ValueError
+            If the specified flow rate is non-positive.
+
+        Notes
+        -----
+        This is a convenience method that simply passes the specified
+        parameters to :func:~`pyqmix.QmixPump.generate_flow`.
+
+        """
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+
+        self.generate_flow(flow_rate, blocking_wait=blocking_wait)
+
     def stop(self):
         """
         Immediately stop pumping.

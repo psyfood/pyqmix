@@ -1,3 +1,7 @@
+2018-08-09
+----------
+* Add `QmixPump.fill()` and `empty()` methods
+
 2018-08-07
 ----------
 * Fix reathedocs build
