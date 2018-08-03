@@ -483,16 +483,7 @@ class QmixPump(object):
             raise ValueError('Unknown syringe type.')
         else:
             syringe = syringes[syringe_type]
-
-        self._call('LCP_SetSyringeParam',
-                   self._handle[0],
-                   syringe['inner_diameter_mm'],
-                   syringe['max_piston_stroke_mm'])
-
-        config.set_pump_syringe_params(
-            self.index,
-            inner_diameter_mm=syringe['inner_diameter_mm'],
-            max_piston_stroke_mm=syringe['max_piston_stroke_mm'])
+            self.set_syringe_params(**syringe)
 
     def get_syringe_params(self):
         """
