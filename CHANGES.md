@@ -1,3 +1,7 @@
+2018-08-07
+----------
+* Fix reathedocs build
+
 2018-08-02
 ----------
 * Add `config` module to `pyqmix.__all__`
