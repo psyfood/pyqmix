@@ -3,6 +3,7 @@
 * Add `QmixPump.fill()` and `empty()` methods
 * `QmixPump` methods now raise on invalid volume and flow rate
   parameters
+* Package specifications have been moved from `setup.py` to `setup.cfg`
 
 2018-08-07
 ----------
