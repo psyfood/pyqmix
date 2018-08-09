@@ -541,15 +541,22 @@ class QmixPump(object):
 
         Parameters
         ----------
-        volume : float
+        volume : float > 0
             The volume to aspirate in physical units.
 
-        flow_rate : float
+        flow_rate : float > 0
             The flow rate to use to aspirate the volume, negative flow rates are
             invalid.
 
         blocking_wait : bool
             Whether to block until done.
+
+        Raises
+        ------
+        ValueError
+            If the specified volume or flow rate are non-positive, or if the
+            fill level at the end of the aspiration procedure would exceed the
+            syringe volume.
 
         Notes
         -----
@@ -557,6 +564,14 @@ class QmixPump(object):
         before the actual aspiration begins.
 
         """
+        if volume <= 0:
+            raise ValueError('Volume must be positive.')
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+        if self.fill_level + volume > self.volume_max:
+            msg = 'Aspiration would exceed syringe volume.'
+            raise ValueError(msg)
+
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)
         if blocking_wait:
@@ -572,10 +587,10 @@ class QmixPump(object):
 
         Parameters
         ----------
-        volume : float
+        volume : float > 0
             The volume to dispense in physical units.
 
-        flow_rate : float
+        flow_rate : float > 0
             The flow rate to use to dispense the volume, negative flow rates are
             invalid.
 
@@ -586,7 +601,27 @@ class QmixPump(object):
             If set to ``True``, it switches valve to postion 1 when dispense is
             finished. It only has effect if ``blocking_wait = True``.
 
+        Raises
+        ------
+        ValueError
+            If the specified volume or flow rate are non-positive, or if the
+            syringe is currently not sufficiently filled to dispense the
+            desired volume.
+
+        Notes
+        -----
+        This method switches the valve to dispense position
+        before the actual aspiration begins.
+
         """
+        if volume <= 0:
+            raise ValueError('Volume must be positive.')
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+        if self.fill_level < volume:
+            msg = 'Current syringe fill level is insufficient.'
+            raise ValueError(msg)
+
         self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)
         if blocking_wait:
@@ -607,17 +642,30 @@ class QmixPump(object):
 
         Parameters
         ----------
-        level : float
+        level : float => 0
             The requested fill level. A level of 0 indicates a completely empty
             syringe.
 
-        flow_rate : float
+        flow_rate : float > 0
             The flow rate to use for pumping.
 
         blocking_wait : bool
             Whether to block until done.
 
+        Raises
+        ------
+        ValueError
+            If specified target fill level is negative, or if flow rate is
+            non-positive.
+
         """
+        if level < 0:
+            raise ValueError('Target level must be >= 0.')
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+
+        # Switch the valves to inlet or outlet position, depending on
+        # whether we are going to aspirate or to dispense.
         if level < self.get_fill_level():
             self.valve.switch_position(self.valve.dispense_pos)
         else:
@@ -636,14 +684,22 @@ class QmixPump(object):
 
         Parameters
         ----------
-        flow_rate : float
+        flow_rate : float != 0
             A positive flow rate indicates dispensing and a negative flow rate
             indicates aspiration.
 
         blocking_wait : bool
             Whether to block until done.
 
+        Raises
+        ------
+        ValueError
+            If a flow rate of zero is specified.
+
         """
+        if flow_rate == 0:
+            raise ValueError('Flow rate must be non-zero.')
+
         if flow_rate > 0:
             self.valve.switch_position(self.valve.dispense_pos)
         else:
@@ -652,6 +708,64 @@ class QmixPump(object):
         if blocking_wait:
             while self.is_pumping:
                 time.sleep(0.0005)
+
+    def fill(self, flow_rate, blocking_wait=False):
+        """
+        Fill the syringe.
+
+        Parameters
+        ----------
+        flow_rate : float > 0
+            The flow rate to use.
+
+        blocking_wait : bool
+            Whether to block until done.
+
+        Raises
+        ------
+        ValueError
+            If the specified flow rate is non-positive.
+
+        Notes
+        -----
+        This is a convenience method that simply passes the specified
+        parameters to :func:~`pyqmix.QmixPump.generate_flow`. Note that
+        `flow_rate` is multiplied by `-1` to ensure the syringe is being
+        filled.
+
+        """
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+
+        self.generate_flow(-flow_rate, blocking_wait=blocking_wait)
+
+    def empty(self, flow_rate, blocking_wait=False):
+        """
+        Empty the syringe.
+
+        Parameters
+        ----------
+        flow_rate : float > 0
+            The flow rate to use.
+
+        blocking_wait : bool
+            Whether to block until done.
+
+        Raises
+        ------
+        ValueError
+            If the specified flow rate is non-positive.
+
+        Notes
+        -----
+        This is a convenience method that simply passes the specified
+        parameters to :func:~`pyqmix.QmixPump.generate_flow`.
+
+        """
+        if flow_rate <= 0:
+            raise ValueError('Flow rate must be positive.')
+
+        self.generate_flow(flow_rate, blocking_wait=blocking_wait)
 
     def stop(self):
         """
