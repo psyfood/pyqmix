@@ -1,2 +1,5 @@
 include versioneer.py
 include pyqmix/_version.py
+include CHANGES.md
+include README.md
+include LICENSE
