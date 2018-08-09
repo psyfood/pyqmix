@@ -134,7 +134,8 @@ class QmixValve(object):
         else:
             target_position = position
 
-        if (position < 0) or (position >= self.number_of_positions):
+        if ((target_position < 0) or
+                (target_position >= self.number_of_positions)):
             msg = ('Must specify position in the range [0, %i] for this valve.'
                    % (self.number_of_positions - 1))
             raise ValueError(msg)
@@ -223,7 +224,8 @@ class QmixExternalValve(QmixValve):
         else:
             target_position = position
 
-        if (position < 0) or (position >= self.number_of_positions):
+        if ((target_position < 0) or
+                (target_position >= self.number_of_positions)):
             msg = ('Must specify position in the range [0, %i] for this valve.'
                    % (self.number_of_positions - 1))
             raise ValueError(msg)
