@@ -4,6 +4,7 @@
 * `QmixPump` methods now raise on invalid volume and flow rate
   parameters
 * Package specifications have been moved from `setup.py` to `setup.cfg`
+* Fix bug when determining valid valve positions
 
 2018-08-07
 ----------
