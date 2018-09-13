@@ -12,7 +12,7 @@ import time
 
 # Location of Qmix device configuration and Qmix SDK DLLs.
 config_dir = op.abspath('./qmix_config')
-dll_dir = op.normpath('D:/QmixsDK')
+dll_dir = op.normpath('D:/QmixSDK')
 
 config.set_qmix_config_dir(config_dir)
 config.set_qmix_dll_dir(dll_dir)
