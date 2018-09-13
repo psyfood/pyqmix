@@ -6,16 +6,19 @@ This simple usage example demonstrates how to initialize the pump system, fill
 one syringe, and dispense a small volume multiple times.
 """
 
-from pyqmix import QmixBus, QmixPump
+from pyqmix import QmixBus, QmixPump, config
 import os.path as op
 import time
 
 # Location of Qmix device configuration and Qmix SDK DLLs.
-config_dir = op.normpath('....')
-dll_dir = op.normpath('....')
+config_dir = op.abspath('./qmix_config')
+dll_dir = op.normpath('D:/QmixsDK')
+
+config.set_qmix_config_dir(config_dir)
+config.set_qmix_dll_dir(dll_dir)
 
 # Initialize the connection to the pump system.
-bus = QmixBus(config_dir=config_dir, dll_dir=dll_dir)
+bus = QmixBus()
 
 # Initialize the first connected pump and perform a calibration move.
 # Program execution is halted until the move is completed.
@@ -26,7 +29,7 @@ pump.calibrate(wait_until_done=True)
 pump.set_flow_unit(prefix='milli', volume_unit='litres',
                    time_unit='per_second')
 pump.set_volume_unit(prefix='milli', unit='litres')
-pump.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
+pump.set_syringe_params_by_type(syringe_type='50 mL glass')
 
 msg = ('The system is now calibrated. Please insert the syringe.\n\n'
        'Press RETURN when done.')
