@@ -25,31 +25,31 @@ pump_1 = pyqmix.QmixPump(index=0)
 pump_1.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_1.set_volume_unit(prefix="milli", unit="litres")
 pump_1.set_syringe_params(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
-pump_1.calibrate(blocking_wait=False)
+pump_1.calibrate(wait_until_done=False)
 
 pump_2 = pyqmix.QmixPump(index=1)
 pump_2.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_2.set_volume_unit(prefix="milli", unit="litres")
 pump_2.set_syringe_params(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
-pump_2.calibrate(blocking_wait=False)
+pump_2.calibrate(wait_until_done=False)
 
 pump_3 = pyqmix.QmixPump(index=2)
 pump_3.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_3.set_volume_unit(prefix="milli", unit="litres")
 pump_3.set_syringe_params(inner_diameter_mm=23.03, max_piston_stroke_mm=60)
-pump_3.calibrate(blocking_wait=False)
+pump_3.calibrate(wait_until_done=False)
 
 pump_5 = pyqmix.QmixPump(index=4)
 pump_5.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_5.set_volume_unit(prefix="milli", unit="litres")
 pump_5.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-pump_5.calibrate(blocking_wait=False)
+pump_5.calibrate(wait_until_done=False)
 
 pump_6 = pyqmix.QmixPump(index=5)
 pump_6.set_flow_unit(prefix="milli", volume_unit="litres", time_unit="per_second")
 pump_6.set_volume_unit(prefix="milli", unit="litres")
 pump_6.set_syringe_params(inner_diameter_mm=32.5, max_piston_stroke_mm=60)
-pump_6.calibrate(blocking_wait=False)
+pump_6.calibrate(wait_until_done=False)
 
 #%% SET TRIGGERS
 # CHANNEL 2
@@ -107,9 +107,9 @@ ch1_trig.trigger()
 
 #%% WASHING PUMPS
 for i in range(10):
-    pump_6.aspirate(30,1, blocking_wait=True)
+    pump_6.aspirate(30, 1, wait_until_done=True)
     core.wait(2,2)
-    pump_6.set_fill_level(0, 2.5, blocking_wait=True)
+    pump_6.set_fill_level(0, 2.5, wait_until_done=True)
 
 #%% TEST PULSES WITH AIR
 #core.wait(8,8)

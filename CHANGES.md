@@ -1,3 +1,7 @@
+2018-09-13
+----------
+* Rename `blocking_wait` keyword argument to `wait_until_done`
+
 2018-08-09
 ----------
 * Add `QmixPump.fill()` and `empty()` methods
