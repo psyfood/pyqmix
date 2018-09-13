@@ -20,7 +20,7 @@ bus = QmixBus(config_dir=config_dir, dll_dir=dll_dir)
 # Initialize the first connected pump and perform a calibration move.
 # Program execution is halted until the move is completed.
 pump = QmixPump(index=0)
-pump.calibrate(blocking_wait=True)
+pump.calibrate(wait_until_done=True)
 
 # Set pump and syringe parameters.
 pump.set_flow_unit(prefix='milli', volume_unit='litres',
@@ -34,7 +34,7 @@ input(msg)
 
 # Fill the syringe at a flow rate of 0.3 mL/s, and halt program execution
 # until the filling is completed.
-pump.generate_flow(-0.3, blocking_wait=True)
+pump.generate_flow(-0.3, wait_until_done=True)
 
 msg = ('The syringe is now filled. To start the experimental procedure, '
        'press RETURN.')
@@ -43,7 +43,7 @@ input(msg)
 # Dispense 1 mL at a flow rate of 1 mL/s ten times, with a break of approx.
 # 2 seconds between dispenses.
 for i in range(10):
-    pump.dispense(volume=1, flow_rate=1, blocking_wait=True)
+    pump.dispense(volume=1, flow_rate=1, wait_until_done=True)
     time.sleep(2)
 
 msg = 'Stimulation is over. Press RETURN to quit.'

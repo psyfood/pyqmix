@@ -227,7 +227,7 @@ class QmixPump(object):
         else:
             return True
 
-    def calibrate(self, blocking_wait=False):
+    def calibrate(self, wait_until_done=False):
         """
         Executes a reference move for a syringe pump.
 
@@ -237,13 +237,13 @@ class QmixPump(object):
 
         Parameters
         ----------
-        blocking_wait : bool
+        wait_until_done : bool
             Whether to block further program execution until done.
 
         """
         self._call('LCP_SyringePumpCalibrate', self._handle[0])
 
-        if blocking_wait:
+        if wait_until_done:
             while not self.is_calibration_finished:
                 time.sleep(0.0005)
 
@@ -535,7 +535,7 @@ class QmixPump(object):
         self._call('LCP_GetFlowRateMax', self._handle[0], self._flow_rate_max)
         return self._flow_rate_max[0]
 
-    def aspirate(self, volume, flow_rate, blocking_wait=False):
+    def aspirate(self, volume, flow_rate, wait_until_done=False):
         """
         Aspirate a certain volume with the specified flow rate.
 
@@ -548,7 +548,7 @@ class QmixPump(object):
             The flow rate to use to aspirate the volume, negative flow rates are
             invalid.
 
-        blocking_wait : bool
+        wait_until_done : bool
             Whether to block until done.
 
         Raises
@@ -574,11 +574,11 @@ class QmixPump(object):
 
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)
-        if blocking_wait:
+        if wait_until_done:
             while self.is_pumping:
                 time.sleep(0.0005)
 
-    def dispense(self, volume, flow_rate, blocking_wait=False,
+    def dispense(self, volume, flow_rate, wait_until_done=False,
                  switch_valve_when_finished=False):
         """
         Dispense a certain volume with a certain flow rate.
@@ -594,12 +594,12 @@ class QmixPump(object):
             The flow rate to use to dispense the volume, negative flow rates are
             invalid.
 
-        blocking_wait : bool
-            Whether to block until done.
+        wait_until_done : bool
+            Whether to halt program execution until done.
 
         switch_valve_when_finished : bool
             If set to ``True``, it switches valve to postion 1 when dispense is
-            finished. It only has effect if ``blocking_wait = True``.
+            finished. It only has effect if ``wait_until_done=True``.
 
         Raises
         ------
@@ -624,14 +624,14 @@ class QmixPump(object):
 
         self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)
-        if blocking_wait:
+        if wait_until_done:
             while self.is_pumping:
                 time.sleep(0.0005)
 
             if switch_valve_when_finished:
                 self.valve.switch_position(self.valve.aspirate_pos)
 
-    def set_fill_level(self, level, flow_rate, blocking_wait=False):
+    def set_fill_level(self, level, flow_rate, wait_until_done=False):
         """
         Pumps fluid with the given flow rate until the requested fill level is
         reached.
@@ -649,8 +649,8 @@ class QmixPump(object):
         flow_rate : float > 0
             The flow rate to use for pumping.
 
-        blocking_wait : bool
-            Whether to block until done.
+        wait_until_done : bool
+            Whether to halt program execution until done.
 
         Raises
         ------
@@ -672,11 +672,11 @@ class QmixPump(object):
             self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)
 
-        if blocking_wait:
+        if wait_until_done:
             while self.is_pumping:
                 time.sleep(0.0005)
 
-    def generate_flow(self, flow_rate, blocking_wait=False):
+    def generate_flow(self, flow_rate, wait_until_done=False):
         """
         Generate a continuous flow.
 
@@ -688,8 +688,8 @@ class QmixPump(object):
             A positive flow rate indicates dispensing and a negative flow rate
             indicates aspiration.
 
-        blocking_wait : bool
-            Whether to block until done.
+        wait_until_done : bool
+            Whether to halt program execution until done.
 
         Raises
         ------
@@ -705,11 +705,11 @@ class QmixPump(object):
         else:
             self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_GenerateFlow', self._handle[0], flow_rate)
-        if blocking_wait:
+        if wait_until_done:
             while self.is_pumping:
                 time.sleep(0.0005)
 
-    def fill(self, flow_rate, blocking_wait=False):
+    def fill(self, flow_rate, wait_until_done=False):
         """
         Fill the syringe.
 
@@ -718,8 +718,8 @@ class QmixPump(object):
         flow_rate : float > 0
             The flow rate to use.
 
-        blocking_wait : bool
-            Whether to block until done.
+        wait_until_done : bool
+            Whether to halt program execution until done.
 
         Raises
         ------
@@ -737,9 +737,9 @@ class QmixPump(object):
         if flow_rate <= 0:
             raise ValueError('Flow rate must be positive.')
 
-        self.generate_flow(-flow_rate, blocking_wait=blocking_wait)
+        self.generate_flow(-flow_rate, wait_until_done=wait_until_done)
 
-    def empty(self, flow_rate, blocking_wait=False):
+    def empty(self, flow_rate, wait_until_done=False):
         """
         Empty the syringe.
 
@@ -748,8 +748,8 @@ class QmixPump(object):
         flow_rate : float > 0
             The flow rate to use.
 
-        blocking_wait : bool
-            Whether to block until done.
+        wait_until_done : bool
+            Whether to halt program execution until done.
 
         Raises
         ------
@@ -765,7 +765,7 @@ class QmixPump(object):
         if flow_rate <= 0:
             raise ValueError('Flow rate must be positive.')
 
-        self.generate_flow(flow_rate, blocking_wait=blocking_wait)
+        self.generate_flow(flow_rate, wait_until_done=wait_until_done)
 
     def stop(self):
         """
@@ -939,7 +939,7 @@ def init_pump(params):
     pump.set_flow_unit(**params['flow'])
     pump.set_volume_unit(**params['volume'])
     pump.set_syringe_params(**params['syringe'])
-    pump.calibrate(blocking_wait=False)
+    pump.calibrate(wait_until_done=False)
 
     return pump
 

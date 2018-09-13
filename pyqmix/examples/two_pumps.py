@@ -45,7 +45,7 @@ for p_name, p in pump.items():
     p.set_flow_unit(**flow_unit)
     p.set_volume_unit(**volume_unit)
     p.set_syringe_params(**syringe_params)
-    p.calibrate(blocking_wait=True)
+    p.calibrate(wait_until_done=True)
 
 msg = ('The system is now calibrated. Please insert the syringes.\n\n'
        'Press RETURN when done.')
@@ -53,7 +53,7 @@ input(msg)
 
 # Fill the syringes and halt program execution until the filling is completed.
 pump['water'].generate_flow(flow_rate['fill'])
-pump['salty'].generate_flow(flow_rate['fill'], blocking_wait=True)
+pump['salty'].generate_flow(flow_rate['fill'], wait_until_done=True)
 
 msg = ('The syringes are now filled. To start the experimental procedure, '
        'press RETURN.')
@@ -63,11 +63,11 @@ input(msg)
 # 5 s between stimulations.
 for i in range(10):
     pump['water'].dispense(volume=1, flow_rate=flow_rate['water'],
-                           blocking_wait=True)
+                           wait_until_done=True)
     pump['salty'].dispense(volume=1, flow_rate=flow_rate['salty'],
-                           blocking_wait=True)
+                           wait_until_done=True)
     pump['water'].dispense(volume=2, flow_rate=flow_rate['water'],
-                           blocking_wait=True)
+                           wait_until_done=True)
     wait(5)
 
 msg = 'Stimulation is over. Press RETURN to quit.'

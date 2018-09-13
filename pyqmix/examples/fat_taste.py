@@ -200,11 +200,11 @@ if __name__ == '__main__':
     
     #%% CALIBRATION 
     ######## REMOVE SYRINGES ########
-    pump_2.calibrate(blocking_wait=False)
-    pump_3.calibrate(blocking_wait=False)
-    pump_4.calibrate(blocking_wait=False)
-    pump_5.calibrate(blocking_wait=False)
-    pump_6.calibrate(blocking_wait=False)
+    pump_2.calibrate(wait_until_done=False)
+    pump_3.calibrate(wait_until_done=False)
+    pump_4.calibrate(wait_until_done=False)
+    pump_5.calibrate(wait_until_done=False)
+    pump_6.calibrate(wait_until_done=False)
     
     #%% STOP PUMPS
 #    pump_4.stop_all_pumps()
