@@ -17,6 +17,10 @@ from .valve import QmixValve
 from .tools import CHK
 from .headers import PUMP_HEADER
 
+syringes = {'25 mL glass': dict(inner_diameter_mm=23.03294,
+                                max_piston_stroke_mm=60),
+            '50 mL glass': dict(inner_diameter_mm=32.57350,
+                                max_piston_stroke_mm=60)}
 
 class QmixPump(object):
     """
@@ -472,10 +476,6 @@ class QmixPump(object):
         :func:~`pyqmix.QmixPump.set_syringe_params`.
 
         """
-        syringes = {'25 mL glass': dict(inner_diameter_mm=23.03294,
-                                        max_piston_stroke_mm=60),
-                    '50 mL glass': dict(inner_diameter_mm=32.57350,
-                                        max_piston_stroke_mm=60)}
 
         if syringe_type not in syringes.keys():
             raise ValueError('Unknown syringe type.')
