@@ -2,6 +2,8 @@
 ----------
 * Rename `switch_valve_when_finished` keyword argument to 
   `switch_valve_when_done` to match `wait_until_done` wording
+* Add `switch_valve_when_finished` keyword argument to
+  `QmixPump.aspirate()` method
 
 2018-09-13
 ----------

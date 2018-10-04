@@ -535,7 +535,8 @@ class QmixPump(object):
         self._call('LCP_GetFlowRateMax', self._handle[0], self._flow_rate_max)
         return self._flow_rate_max[0]
 
-    def aspirate(self, volume, flow_rate, wait_until_done=False):
+    def aspirate(self, volume, flow_rate, wait_until_done=False,
+                 switch_valve_when_done=False):
         """
         Aspirate a certain volume with the specified flow rate.
 
@@ -550,6 +551,11 @@ class QmixPump(object):
 
         wait_until_done : bool
             Whether to block until done.
+
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to dispense position after
+            the aspiration is finished. It only takes effect if
+            ``wait_until_done=True``.
 
         Raises
         ------
@@ -577,6 +583,9 @@ class QmixPump(object):
         if wait_until_done:
             while self.is_pumping:
                 time.sleep(0.0005)
+
+            if switch_valve_when_done:
+                self.valve.switch_position(self.valve.dispense_pos)
 
     def dispense(self, volume, flow_rate, wait_until_done=False,
                  switch_valve_when_done=False):
