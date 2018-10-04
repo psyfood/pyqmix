@@ -6,6 +6,8 @@
   `QmixPump.aspirate()` method
 * Wait until the pumps have actually started operating before checking
   whether pumping has finished when using the `wait_until_done` kwarg.
+* Imply `wait_until_done=True` when `switch_valve_when_done=True`
+  keyword argument is specified.
 
 2018-09-13
 ----------

@@ -554,8 +554,7 @@ class QmixPump(object):
 
         switch_valve_when_done : bool
             If set to ``True``, it switches valve to dispense position after
-            the aspiration is finished. It only takes effect if
-            ``wait_until_done=True``.
+            the aspiration is finished. Implies `wait_until_done=True`.
 
         Raises
         ------
@@ -577,6 +576,9 @@ class QmixPump(object):
         if self.fill_level + volume > self.volume_max:
             msg = 'Aspiration would exceed syringe volume.'
             raise ValueError(msg)
+
+        if switch_valve_when_done:
+            wait_until_done = True
 
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)
@@ -613,8 +615,7 @@ class QmixPump(object):
 
         switch_valve_when_done : bool
             If set to ``True``, it switches valve to aspirate position after
-            the dispense is finished. It only takes effect if
-            ``wait_until_done=True``.
+            the dispense is finished. Implies `wait_until_done=True`.
 
         Raises
         ------
@@ -636,6 +637,9 @@ class QmixPump(object):
         if self.fill_level < volume:
             msg = 'Current syringe fill level is insufficient.'
             raise ValueError(msg)
+
+        if switch_valve_when_done:
+            wait_until_done = True
 
         self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)
