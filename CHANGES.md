@@ -8,6 +8,7 @@
   whether pumping has finished when using the `wait_until_done` kwarg.
 * Imply `wait_until_done=True` when `switch_valve_when_done=True`
   keyword argument is specified.
+* Improve auto-discovery of Qmix SDK DLLs
 
 2018-09-13
 ----------

@@ -11,7 +11,7 @@ if sys.version_info[0] < 3:
     from builtins import bytes
 
 from . import config
-from .tools import CHK
+from .tools import CHK, find_dll
 from .headers import BUS_HEADER
 
 
@@ -38,12 +38,19 @@ class QmixBus(object):
     """
 
     def __init__(self, auto_open=True, auto_start=True):
-        dll_dir = config.read_config().get('qmix_dll_dir')
-        if dll_dir is None:
-            self.dll_file = 'labbCAN_Bus_API.dll'
+        dll_dir = config.read_config().get('qmix_dll_dir', None)
+        dll_filename = 'labbCAN_Bus_API.dll'
+
+        dll_path = find_dll(dll_dir=dll_dir, dll_filename=dll_filename)
+        if dll_path is None:
+            msg = 'Could not find the Qmix SDK DLL %s.' % dll_filename
+            raise RuntimeError(msg)
         else:
-            os.environ['PATH'] += os.pathsep + dll_dir
-            self.dll_file = os.path.join(dll_dir, 'labbCAN_Bus_API.dll')
+            self.dll_path = dll_path
+
+        self._ffi = FFI()
+        self._ffi.cdef(BUS_HEADER)
+        self._dll = self._ffi.dlopen(self.dll_path)
 
         config_dir = config.read_config().get('qmix_config_dir')
         if config_dir is not None:
@@ -55,10 +62,6 @@ class QmixBus(object):
 
         self.auto_open = auto_open
         self.auto_start = auto_start
-
-        self._ffi = FFI()
-        self._ffi.cdef(BUS_HEADER)
-        self._dll = self._ffi.dlopen(self.dll_file)
 
         self._p_config_dir = self._ffi.new(
             'char[]',

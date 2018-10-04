@@ -14,7 +14,7 @@ if sys.version_info[0] < 3:
 
 from . import config
 from .valve import QmixValve
-from .tools import CHK
+from .tools import CHK, find_dll
 from .headers import PUMP_HEADER
 
 syringes = {'25 mL glass': dict(inner_diameter_mm=23.03294,
@@ -50,14 +50,18 @@ class QmixPump(object):
         """
         cfg = config.read_config()
         dll_dir = cfg.get('qmix_dll_dir', None)
-        if dll_dir is None:
-            self.dll_file = 'labbCAN_Pump_API.dll'
+        dll_filename = 'labbCAN_Pump_API.dll'
+
+        dll_path = find_dll(dll_dir=dll_dir, dll_filename=dll_filename)
+        if dll_path is None:
+            msg = 'Could not find the Qmix SDK DLL %s.' % dll_filename
+            raise RuntimeError(msg)
         else:
-            self.dll_file = os.path.join(dll_dir, 'labbCAN_Pump_API.dll')
+            self.dll_path = dll_path
 
         self._ffi = FFI()
         self._ffi.cdef(PUMP_HEADER)
-        self._dll = self._ffi.dlopen(self.dll_file)
+        self._dll = self._ffi.dlopen(self.dll_path)
 
         self.index = index
         self._name = name
