@@ -581,6 +581,11 @@ class QmixPump(object):
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
@@ -635,6 +640,11 @@ class QmixPump(object):
         self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
@@ -683,6 +693,11 @@ class QmixPump(object):
         self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)
 
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
@@ -716,6 +731,11 @@ class QmixPump(object):
             self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_GenerateFlow', self._handle[0], flow_rate)
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
