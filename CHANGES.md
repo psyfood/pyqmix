@@ -1,3 +1,14 @@
+2018-10-04
+----------
+* Rename `switch_valve_when_finished` keyword argument to 
+  `switch_valve_when_done` to match `wait_until_done` wording
+* Add `switch_valve_when_finished` keyword argument to
+  `QmixPump.aspirate()` method
+* Wait until the pumps have actually started operating before checking
+  whether pumping has finished when using the `wait_until_done` kwarg.
+* Imply `wait_until_done=True` when `switch_valve_when_done=True`
+  keyword argument is specified.
+
 2018-09-13
 ----------
 * Rename `blocking_wait` keyword argument to `wait_until_done`

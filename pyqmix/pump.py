@@ -535,7 +535,8 @@ class QmixPump(object):
         self._call('LCP_GetFlowRateMax', self._handle[0], self._flow_rate_max)
         return self._flow_rate_max[0]
 
-    def aspirate(self, volume, flow_rate, wait_until_done=False):
+    def aspirate(self, volume, flow_rate, wait_until_done=False,
+                 switch_valve_when_done=False):
         """
         Aspirate a certain volume with the specified flow rate.
 
@@ -550,6 +551,10 @@ class QmixPump(object):
 
         wait_until_done : bool
             Whether to block until done.
+
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to dispense position after
+            the aspiration is finished. Implies `wait_until_done=True`.
 
         Raises
         ------
@@ -572,14 +577,25 @@ class QmixPump(object):
             msg = 'Aspiration would exceed syringe volume.'
             raise ValueError(msg)
 
+        if switch_valve_when_done:
+            wait_until_done = True
+
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
+            if switch_valve_when_done:
+                self.valve.switch_position(self.valve.dispense_pos)
+
     def dispense(self, volume, flow_rate, wait_until_done=False,
-                 switch_valve_when_finished=False):
+                 switch_valve_when_done=False):
         """
         Dispense a certain volume with a certain flow rate.
 
@@ -597,9 +613,9 @@ class QmixPump(object):
         wait_until_done : bool
             Whether to halt program execution until done.
 
-        switch_valve_when_finished : bool
-            If set to ``True``, it switches valve to postion 1 when dispense is
-            finished. It only has effect if ``wait_until_done=True``.
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to aspirate position after
+            the dispense is finished. Implies `wait_until_done=True`.
 
         Raises
         ------
@@ -622,13 +638,21 @@ class QmixPump(object):
             msg = 'Current syringe fill level is insufficient.'
             raise ValueError(msg)
 
+        if switch_valve_when_done:
+            wait_until_done = True
+
         self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
-            if switch_valve_when_finished:
+            if switch_valve_when_done:
                 self.valve.switch_position(self.valve.aspirate_pos)
 
     def set_fill_level(self, level, flow_rate, wait_until_done=False):
@@ -673,6 +697,11 @@ class QmixPump(object):
         self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)
 
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
@@ -706,6 +735,11 @@ class QmixPump(object):
             self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_GenerateFlow', self._handle[0], flow_rate)
         if wait_until_done:
+            # Wait until pumping has actually started.
+            while not self.is_pumping:
+                time.sleep(0.0005)
+
+            # Now wait until the pumping has finished.
             while self.is_pumping:
                 time.sleep(0.0005)
 
