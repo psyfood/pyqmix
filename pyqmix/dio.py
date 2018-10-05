@@ -10,7 +10,7 @@ if sys.version_info[0] < 3:
     from builtins import bytes
 
 from . import config
-from .tools import CHK
+from .tools import CHK, find_dll
 from .headers import DIGITAL_IO_HEADER
 
 
@@ -39,15 +39,18 @@ class QmixDigitalIO(object):
             self.name = name
 
         dll_dir = config.read_config().get('qmix_dll_dir', None)
-        if dll_dir is None:
-            self.dll_file = 'labbCAN_DigIO_API.dll'
+        dll_filename = 'labbCAN_DigIO_API.dll'
+
+        dll_path = find_dll(dll_dir=dll_dir, dll_filename=dll_filename)
+        if dll_path is None:
+            msg = 'Could not find the Qmix SDK DLL %s.' % dll_filename
+            raise RuntimeError(msg)
         else:
-            self.dll_file = os.path.join(dll_dir, 'labbCAN_DigIO_API.dll')
+            self.dll_path = dll_path
 
         self._ffi = FFI()
         self._ffi.cdef(DIGITAL_IO_HEADER)
-
-        self._dll = self._ffi.dlopen(self.dll_file)
+        self._dll = self._ffi.dlopen(self.dll_path)
 
         self._handle = self._ffi.new('dev_hdl *', 0)
 
