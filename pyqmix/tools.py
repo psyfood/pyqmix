@@ -69,30 +69,36 @@ def find_dll(dll_dir, dll_filename):
 
     """
     if not dll_dir:
-        if os.path.exists(dll_filename):  # Check current directory.
+        # Check current directory.
+        if os.path.exists(dll_filename):
             dll_path = dll_filename
-        else:
-            # Check DLL search paths.
-            import win32api
-            try:
-                win32api.LoadLibrary(dll_filename)
-                dll_path = dll_filename
-            except Exception:
-                # Check default installation directory.
-                import appdirs
-                dll_dir = appdirs.user_data_dir('QmixSDK', '')
-                if os.path.exists(os.path.join(dll_dir, dll_filename)):
-                    dll_path = os.path.join(dll_dir, dll_filename)
-                    # Add DLL dir to PATH, otherwise we won't be able to load the DLL.
-                    os.environ['PATH'] += os.pathsep + dll_dir
-                else:
-                    dll_path = None
+            return dll_path
+
+        # Check DLL search paths.
+        import win32api
+        try:
+            win32api.LoadLibrary(dll_filename)
+            dll_path = dll_filename
+            return dll_path
+        except Exception:
+            pass
+
+        # Check default installation directory.
+        import appdirs
+        dll_dir = appdirs.user_data_dir('QmixSDK', '')
+        if os.path.exists(os.path.join(dll_dir, dll_filename)):
+            dll_path = os.path.join(dll_dir, dll_filename)
+            # Add DLL dir to PATH, otherwise we won't be able to load the DLL.
+            os.environ['PATH'] += os.pathsep + dll_dir
+            return dll_path
+
+        return None
     else:
         if os.path.exists(os.path.join(dll_dir, dll_filename)):
             dll_path = os.path.join(dll_dir, dll_filename)
             # Add DLL dir to PATH, otherwise we won't be able to load the DLL.
             os.environ['PATH'] += os.pathsep + dll_dir
+            return dll_path
         else:
-            dll_path = None
+            return None
 
-    return dll_path
