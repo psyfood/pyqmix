@@ -1,3 +1,7 @@
+2018-10-06
+----------
+* Assume default location of Qmix configuration files (to avoid full path).   
+
 2018-10-04
 ----------
 * Rename `switch_valve_when_finished` keyword argument to 

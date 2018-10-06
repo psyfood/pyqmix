@@ -13,6 +13,9 @@ yaml.default_flow_style = False
 PYQMIX_CONFIG_DIR = user_config_dir(appname='pyqmix', appauthor=False)
 PYQMIX_CONFIG_FILE = os.path.join(PYQMIX_CONFIG_DIR, 'config.yaml')
 
+DEFAULT_CONFIGS_DIR = os.path.normpath('C:/Users/Public/Documents/'
+                                      'QmixElements/Projects/default_project/'
+                                      'Configurations/')
 
 # Python 2 compatibility
 try:
@@ -63,18 +66,53 @@ def delete_config():
         pass
 
 
-def set_qmix_config_dir(d):
+def get_available_qmix_configs(configs_dir=None):
     """
-    Specify the location of the directory containing the Qmix configurations.
+    Create a list of available qmix configurations
 
     Parameters
     ----------
-    d : string
-        The Qmix configuration directory. Must be an absolute path.
+    configs_dir : string or None
+        The parent directory containing the Qmix configurations.
+        If ``None``, assume the default directory used by
+        Qmix Elements, i.e.,
+        `C:/Users/Public/Documents/QmixElements/Projects/default_project/Configurations/`.
+
+    Returns
+    -------
+    list of strings
+        Names of available Qmix configurations.
 
     """
+    if configs_dir is None:
+        configs_dir = DEFAULT_CONFIGS_DIR
+
+    def get_immediate_subdirectories(a_dir):
+        return [name for name in os.listdir(a_dir)
+                if os.path.isdir(os.path.join(a_dir, name))]
+
+    return get_immediate_subdirectories(configs_dir)
+
+
+def set_qmix_config(config_name, configs_dir=None):
+    """
+    Specify a Qmix configuration.
+
+    Parameters
+    ----------
+    config_name : string
+        The name of a Qmix configuration. Assumed to be stored at the default directory.
+    configs_dir : string
+        The parent directory containing the Qmix configurations.
+
+    """
+
+    if configs_dir is None:
+        configs_dir = DEFAULT_CONFIGS_DIR
+
+    config_dir = os.path.join(configs_dir, config_name)
     cfg = read_config()
-    cfg['qmix_config_dir'] = d
+    cfg['qmix_config_dir'] = config_dir
 
     with open(PYQMIX_CONFIG_FILE, 'w') as f:
         yaml.dump(cfg, f)
@@ -87,7 +125,7 @@ def set_qmix_dll_dir(d):
     Parameters
     ----------
     d : string
-        Th Qmix SDK DLL directory. Must be an absolute path.
+        The Qmix SDK DLL directory. Must be an absolute path.
 
     """
     cfg = read_config()
