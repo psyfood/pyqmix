@@ -5,11 +5,16 @@ Interfaces
 .. autosummary::
    :nosignatures:
 
+   config
    QmixBus
    QmixPump
    QmixValve
    QmixExternalValve
    QmixDigitalIO
+
+config
+------
+.. automodule:: pyqmix.config
 
 QmixBus
 -------

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+pyqmix configuration.
+"""
+
 import os
 from collections import OrderedDict
 from ruamel.yaml import YAML
@@ -26,7 +30,7 @@ except NameError:
 
 def read_config():
     """
-    Read the currently stored pyqmix confuration from disk.
+    Read the currently stored pyqmix configuration from disk.
 
     Returns
     -------
@@ -179,6 +183,18 @@ def add_pump(index):
 
 
 def set_pump_name(index, name):
+    """
+    Set the name of a pump, as it will be stored in the configuration file.
+
+    Parameters
+    ----------
+    index : int
+        The index of the pump. Indexes are zero-based.
+
+    index : str
+        The desired name of the pump.
+
+    """
     cfg = read_config()
     pump = cfg['pumps'][index]
     pump['name'] = name
@@ -188,6 +204,18 @@ def set_pump_name(index, name):
 
 
 def set_pump_drive_pos_counter(index, value):
+    """
+    Set the pump drive position counter to the specified value.
+
+    Parameters
+    ----------
+    index : int
+        The index of the pump. Indexes are zero-based.
+
+    value : float
+        The value to set the drive position counter to.
+
+    """
     cfg = read_config()
     pump = cfg['pumps'][index]
     pump['drive_pos_counter'] = value
@@ -197,6 +225,22 @@ def set_pump_drive_pos_counter(index, value):
 
 
 def set_pump_volume_unit(index, prefix, unit):
+    """
+    Set the pump volume unit.
+
+    Parameters
+    ----------
+    index : int
+        The index of the pump. Indexes are zero-based.
+
+    prefix : str
+        The prefix of the SIunit:
+        ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+
+    unit : str
+        The volume unit identifier: ``litres``.
+
+    """
     cfg = read_config()
     pump = cfg['pumps'][index]
     pump['volume_unit'] = OrderedDict([('prefix', prefix),
@@ -207,6 +251,26 @@ def set_pump_volume_unit(index, prefix, unit):
 
 
 def set_pump_flow_unit(index, prefix, volume_unit, time_unit):
+    """
+    Set the flow unit for a certain pump.
+
+    The flow unit defines the unit to be used for all flow values passed to
+    API functions or retrieved from API functions.
+
+    Parameters
+    ----------
+    prefix : str
+        The prefix of the SI unit:
+        ``centi``, ``deci``, ``milli``, ``micro``.
+
+    volume_unit : str
+        The volume unit identifier: ``litres``.
+
+    time_unit : str
+        The time unit (denominator) of the velocity unit:
+        ``per_hour``, ``per_minute``, ``per_second``.
+
+    """
     cfg = read_config()
     pump = cfg['pumps'][index]
     pump['flow_unit'] = OrderedDict([('prefix', prefix),
@@ -218,6 +282,25 @@ def set_pump_flow_unit(index, prefix, volume_unit, time_unit):
 
 
 def set_pump_syringe_params(index, inner_diameter_mm, max_piston_stroke_mm):
+    """
+    Set syringe properties.
+
+    If you change the syringe in one device, you need to setup the new
+    syringe parameters to get proper conversion of flow rate und volume
+    units.
+
+    Parameters
+    ----------
+    inner_diameter_mm : float
+        Inner diameter of the syringe tube in millimetres.
+
+    max_piston_stroke_mm : float
+        The maximum piston stroke defines the maximum position the piston
+        can be moved to before it slips out of the syringe tube.
+        The maximum piston stroke limits the maximum travel range of the
+        syringe pump pusher.
+
+    """
     cfg = read_config()
     pump = cfg['pumps'][index]
     pump['syringe_params'] = OrderedDict(
