@@ -102,13 +102,24 @@ def set_qmix_config(config_name, configs_dir=None):
     ----------
     config_name : string
         The name of a Qmix configuration. Assumed to be stored at the default directory.
-    configs_dir : string
+    configs_dir : string or None
         The parent directory containing the Qmix configurations.
+        If ``None``, we will look for the Qmix configuration in the current
+        directory; if not found, move on to look in the Qmix default
+        directory.
+
+    Raises
+    ------
+    ValueError
+        If the specified configuration could not be found.
 
     """
 
     if configs_dir is None:
-        configs_dir = DEFAULT_CONFIGS_DIR
+        if os.path.exists(config_name):
+            configs_dir = os.path.abspath('.')
+        else:
+            configs_dir = DEFAULT_CONFIGS_DIR
 
     config_dir = os.path.join(configs_dir, config_name)
 
