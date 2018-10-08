@@ -111,6 +111,11 @@ def set_qmix_config(config_name, configs_dir=None):
         configs_dir = DEFAULT_CONFIGS_DIR
 
     config_dir = os.path.join(configs_dir, config_name)
+
+    if not os.path.exists(config_dir):
+        msg = 'The specified configuration does not exist: %s' % config_dir
+        raise ValueError(msg)
+
     cfg = read_config()
     cfg['qmix_config_dir'] = config_dir
 
