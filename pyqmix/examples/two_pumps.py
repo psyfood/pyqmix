@@ -7,17 +7,11 @@ salty stimulation in-between a continuous stream of water.
 """
 
 from pyqmix import QmixBus, QmixPump, config
-import os.path as op
 from time import sleep
 
-# Location of Qmix device configuration and Qmix SDK DLLs.
-# Adjust as needed.
-configs_dir = op.abspath('./')
+# Qmix device configuration.
 config_name = 'qmix_config'
-dll_dir = op.normpath('D:/QmixSDK')
-
-config.set_qmix_config(config_name=config_name, configs_dir=configs_dir)
-config.set_qmix_dll_dir(dll_dir)
+config.set_qmix_config(config_name)
 
 # Flow and volume units and dimensions of the syringes.
 flow_unit = dict(prefix='milli',
