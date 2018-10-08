@@ -12,10 +12,11 @@ from time import sleep
 
 # Location of Qmix device configuration and Qmix SDK DLLs.
 # Adjust as needed.
-config_dir = op.abspath('./qmix_config')
+configs_dir = op.abspath('./')
+config_name = 'qmix_config'
 dll_dir = op.normpath('D:/QmixSDK')
 
-config.set_qmix_config_dir(config_dir)
+config.set_qmix_config(config_name=config_name, configs_dir=configs_dir)
 config.set_qmix_dll_dir(dll_dir)
 
 # Flow and volume units and dimensions of the syringes.

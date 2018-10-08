@@ -56,8 +56,8 @@ class QmixBus(object):
         if config_dir is not None:
             self.config_dir = config_dir
         else:
-            msg = ('Please specify the Qmix configuration directory via '
-                   'pyqmix.config.set_qmix_config_dir() first.')
+            msg = ('Please specify the Qmix configuration via '
+                   'pyqmix.config.set_qmix_config() first.')
             raise RuntimeError(msg)
 
         self.auto_open = auto_open
