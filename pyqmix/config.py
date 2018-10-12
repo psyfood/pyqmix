@@ -60,7 +60,12 @@ def delete_config():
     Delete the configuration file.
 
     """
-    os.remove(PYQMIX_CONFIG_FILE)
+    # Try to remove config file. Avoid error if the file has already
+    # been deleted.
+    try:
+        os.remove(PYQMIX_CONFIG_FILE)
+    except OSError:
+        pass
 
     # Try to remove config directory. Only succeeds of directory
     # is empty.
