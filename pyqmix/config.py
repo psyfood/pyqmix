@@ -18,8 +18,8 @@ PYQMIX_CONFIG_DIR = user_config_dir(appname='pyqmix', appauthor=False)
 PYQMIX_CONFIG_FILE = os.path.join(PYQMIX_CONFIG_DIR, 'config.yaml')
 
 DEFAULT_CONFIGS_DIR = os.path.normpath('C:/Users/Public/Documents/'
-                                      'QmixElements/Projects/default_project/'
-                                      'Configurations')
+                                       'QmixElements/Projects/default_project/'
+                                       'Configurations')
 
 # Python 2 compatibility
 try:
