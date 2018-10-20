@@ -1,6 +1,6 @@
 Welcome to the pyqmix documentation!
 ====================================
-This is the API reference of `pyqmi`. You can find devie setup and installation instructions in the `README file on GitHub`_.
+This is the API reference of `pyqmix`. You can find device setup and installation instructions in the `README file on GitHub`_.
 
 .. Contents:
 
