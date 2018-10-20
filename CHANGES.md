@@ -1,3 +1,17 @@
+Version 2018.10.xx
+------------------
+* Updates to documentation
+* Handle the case when a user requests to delete a non-existing configuration file.
+* Update packages requirements to include `pywin32`.
+
+Version 2018.10.08a
+-------------------
+* Functionally identical to version 2018.10.08, but with additional docstrings for the config module.
+
+Version 2018.10.08
+------------------
+This release includes all the changes listed below.
+
 2018-10-06
 ----------
 * Assume default location of Qmix configuration files (to avoid full path).   
