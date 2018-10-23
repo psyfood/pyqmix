@@ -4,6 +4,7 @@ Version 2018.10.xx
 * Handle the case when a user requests to delete a non-existing configuration file.
 * Update packages requirements to include `pywin32`.
 * We now build universal wheels for both Python 2 and 3.
+* Add support for Travis continuous integration tests on GitHub.
 
 Version 2018.10.08a
 -------------------
