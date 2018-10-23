@@ -1,0 +1,28 @@
+dist: trusty
+language: python
+
+matrix:
+  include:
+
+    - os: linux
+      env: PYTHON_VERSION=3.6
+
+    - os: linux
+      env: PYTHON_VERSION=3.7
+
+before_install:
+  - pwd
+  - ./travis/00_install_miniconda.sh
+
+  - source ~/miniconda/bin/activate pyqmix
+  - echo $PATH
+  - which python
+  - python --version
+
+install:
+  - python setup.py build
+  - python setup.py sdist bdist_wheel
+  - python setup.py install
+
+script:
+  - python -c 'import pyqmix; print(pyqmix.__version__)'
