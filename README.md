@@ -3,7 +3,7 @@
 <a href="https://pypi.org/project/pyqmix/">
     <img src="https://img.shields.io/pypi/v/pyqmix.svg" alt="Latest Release" />
 </a> 
-<a href="https://pypi.org/project/pyqmix/">
+<a href="https://travis-ci.org/psyfood/pyqmix">
     <img src="https://travis-ci.org/psyfood/pyqmix.svg?branch=master" alt="Build Status" />
 </a> 
 
