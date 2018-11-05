@@ -1,4 +1,4 @@
-Version 2018.10.xx
+Version 2018.11.05
 ------------------
 * Updates to documentation
 * Handle the case when a user requests to delete a non-existing configuration file.
