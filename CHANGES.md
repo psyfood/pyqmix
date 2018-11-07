@@ -1,3 +1,7 @@
+Version 2018.11.07
+------------------
+* Report correct version number when installed from wheel.
+
 Version 2018.11.05
 ------------------
 * Updates to documentation
