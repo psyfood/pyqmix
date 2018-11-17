@@ -1,11 +1,8 @@
 # Qmix pump and valve interface
 
-<a href="https://pypi.org/project/pyqmix/">
-    <img src="https://img.shields.io/pypi/v/pyqmix.svg" alt="Latest Release" />
-</a> 
-<a href="https://travis-ci.org/psyfood/pyqmix">
-    <img src="https://travis-ci.org/psyfood/pyqmix.svg?branch=master" alt="Build Status" />
-</a> 
+[![Travis-CI Build Status](https://travis-ci.org/psyfood/pyqmix.svg?branch=master)](https://travis-ci.org/psyfood/pyqmix)
+[![Latest PyPI Release](https://img.shields.io/pypi/v/pyqmix.svg)](https://pypi.org/project/pyqmix/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/pyqmix.svg)](https://anaconda.org/conda-forge/pyqmix)
 
 This Python package wraps the Cetoni Qmix pump and valve interface DLLs using
 CFFI. Supports both Python 2 and 3.
