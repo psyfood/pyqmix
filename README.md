@@ -18,12 +18,29 @@ CFFI. Supports both Python 2 and 3.
 - [Citation](#citation)
 
 ## Quick installation instructions
-If you already installed the Cetoni QmixSDK, created a device configuration via QmixElements, and are familiar with Python, installing `pyqmix` is as easy as running
+
+
+If you already installed the Cetoni QmixSDK, created a device configuration via QmixElements, and are familiar with Python, you may simply install `pyqmix` via `conda` from `conda-forge`. To create a new `conda` environment for `pyqmix`, named `nemesys`, run
+```
+conda create -n nemesys -c conda-forge pyqmix
+```
+
+from the command line. This is the recommended installation procedure.
+
+To install `pyqmix` into an *existing* `conda` environment, run
+
+```
+conda install -c conda-forge pyqmix
+```
+However, we suggest you always create a new, dedicated environment instead.
+
+Of course, you may also install `pyqmix` via good ol' `pip`:
 
 ```
 pip install pyqmix
 ```
-from the command line. If you have no idea what this is all about, we suggest you follow the procedures described below.
+
+If you have no idea what this is all about, we suggest you follow the procedures described below.
 
 ## Gustometer Setup
 
@@ -80,21 +97,16 @@ The user-visible part of pyqmix-web runs in the web browser. You need a modern b
 Create a new `conda` Python environment called `nemesys` and install the required packages into this environment.
 - Click the Windows button / Open the “Start” menu
 - Open the Anaconda Prompt. This will open a command line window which is correctly set up to use your Anaconda Python installation.
-- Create the nemesys Python environment and install the Spyder development environment:
-  - Type: `conda create -n nemesys python=3 spyder`
-- Activate the newly created environment:
-  - Type: `activate nemesys`
-- Finally, install pyqmix:
-  - Type: `pip install pyqmix`
-
+- Create the `nemesys` Python environment and install `pyqmix` as well as the [Spyder](https://www.spyder-ide.org) development environment:
+  - Type: `conda create -n nemesys python=3 pyqmix spyder`
 
 ## Operate pumps via pyqmix
 ### Open and run scripts
 - Open the Anaconda Prompt as described above.
-- Activate the nemesys environment
-  - Type: activate nemesys
+- Activate the `nemesys` environment
+  - Type: `activate nemesys`
 - Start the Spyder development environment:
-  - Type: spyder
+  - Type: `spyder`
 - Open the [example scripts](https://github.com/psyfood/pyqmix/tree/master/pyqmix/examples), run and modify them.
 - Have fun!
 
