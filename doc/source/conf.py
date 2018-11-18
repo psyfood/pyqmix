@@ -97,7 +97,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyqmix'
-copyright = u'2017, Lorenzo Alfine & Richard Höchenberger'
+copyright = u'2017, Lorenzo Alfine, Camilla Arndal Andersen, & Richard Höchenberger'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -251,7 +251,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'pyqmix.tex', u'pyqmix Documentation',
-     u'Lorenzo Alfine & Richard Höchenberger', 'manual'),
+     u'Lorenzo Alfine, Camilla Arndal Andersen, & Richard Höchenberger', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -281,7 +281,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'pyqmix', u'pyqmix Documentation',
-     [u'Lorenzo Alfine & Richard Höchenberger'], 1)
+     [u'Lorenzo Alfine, Camilla Arndal Andersen, & Richard Höchenberger'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -295,7 +295,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'pyqmix', u'pyqmix Documentation',
-     u'Lorenzo Alfine & Richard Höchenberger', 'pyqmix', 'Different helper modules for analysis of psychophysics experiments.',
+     u'Lorenzo Alfine, Camilla Arndal Andersen, & Richard Höchenberger', 'pyqmix', 'A wrapper for the Cetoni Qmix SDK.',
      'Miscellaneous'),
 ]
 
