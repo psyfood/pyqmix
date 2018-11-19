@@ -25,7 +25,7 @@ If you already installed the Cetoni QmixSDK, created a device configuration via 
 conda create -n nemesys -c conda-forge pyqmix
 ```
 
-from the command line. This is the recommended installation procedure.
+from the command line. This is the recommended installation procedure, because it ensures the installation of `pyqmix` and all of its dependencies will not alter any existing `conda` environment.
 
 To install `pyqmix` into an *existing* `conda` environment, run
 
