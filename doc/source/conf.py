@@ -97,7 +97,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyqmix'
-copyright = u'2017, Lorenzo Alfine, Camilla Arndal Andersen, & Richard Höchenberger'
+copyright = u'2018, Lorenzo Alfine, Camilla Arndal Andersen, & Richard Höchenberger.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
