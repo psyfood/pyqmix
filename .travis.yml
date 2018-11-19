@@ -3,6 +3,8 @@ language: python
 
 matrix:
   include:
+    - os: linux
+      env: PYTHON_VERSION=2.7
 
     - os: linux
       env: PYTHON_VERSION=3.6

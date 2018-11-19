@@ -1,6 +1,7 @@
 Version 2018.xx.xx
 ------------------
 * Update installation instructions
+* Automated testing using Travis now also runs on Python 2.7 (only tested Python 3 before)
 
 Version 2018.11.07
 ------------------
