@@ -1,7 +1,11 @@
 Version 2018.xx.xx
 ------------------
 * Update installation instructions
-* Automated testing using Travis now also runs on Python 2.7 (only tested Python 3 before)
+* Automated testing using Travis now also runs on Python 2.7 (only tested
+  Python 3 before)
+* `switch_valve_when_done` keyword argument is now available for all pumping
+  operations
+* Depend on `pypiwin32` instead of `pywin32`
 
 Version 2018.11.07
 ------------------

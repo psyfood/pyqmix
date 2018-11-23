@@ -586,6 +586,7 @@ class QmixPump(object):
 
         self.valve.switch_position(self.valve.aspirate_pos)
         self._call('LCP_Aspirate', self._handle[0], volume, flow_rate)
+
         if wait_until_done:
             # Wait until pumping has actually started.
             while not self.is_pumping:
@@ -647,6 +648,7 @@ class QmixPump(object):
 
         self.valve.switch_position(self.valve.dispense_pos)
         self._call('LCP_Dispense', self._handle[0], volume, flow_rate)
+
         if wait_until_done:
             # Wait until pumping has actually started.
             while not self.is_pumping:
@@ -659,7 +661,8 @@ class QmixPump(object):
             if switch_valve_when_done:
                 self.valve.switch_position(self.valve.aspirate_pos)
 
-    def set_fill_level(self, level, flow_rate, wait_until_done=False):
+    def set_fill_level(self, level, flow_rate, wait_until_done=False,
+                       switch_valve_when_done=False):
         """
         Pumps fluid with the given flow rate until the requested fill level is
         reached.
@@ -680,6 +683,10 @@ class QmixPump(object):
         wait_until_done : bool
             Whether to halt program execution until done.
 
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to dispense position after
+            the aspiration is finished. Implies `wait_until_done=True`.
+
         Raises
         ------
         ValueError
@@ -692,12 +699,16 @@ class QmixPump(object):
         if flow_rate <= 0:
             raise ValueError('Flow rate must be positive.')
 
+        if switch_valve_when_done:
+            wait_until_done = True
+
         # Switch the valves to inlet or outlet position, depending on
         # whether we are going to aspirate or to dispense.
         if level < self.get_fill_level():
             self.valve.switch_position(self.valve.dispense_pos)
         else:
             self.valve.switch_position(self.valve.aspirate_pos)
+
         self._call('LCP_SetFillLevel', self._handle[0], level, flow_rate)
 
         if wait_until_done:
@@ -709,7 +720,11 @@ class QmixPump(object):
             while self.is_pumping:
                 time.sleep(0.0005)
 
-    def generate_flow(self, flow_rate, wait_until_done=False):
+            if switch_valve_when_done:
+                self.valve.switch_position(self.valve.aspirate_pos)
+
+    def generate_flow(self, flow_rate, wait_until_done=False,
+                      switch_valve_when_done=False):
         """
         Generate a continuous flow.
 
@@ -724,6 +739,10 @@ class QmixPump(object):
         wait_until_done : bool
             Whether to halt program execution until done.
 
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to dispense position after
+            the aspiration is finished. Implies `wait_until_done=True`.
+
         Raises
         ------
         ValueError
@@ -733,11 +752,16 @@ class QmixPump(object):
         if flow_rate == 0:
             raise ValueError('Flow rate must be non-zero.')
 
+        if switch_valve_when_done:
+            wait_until_done = True
+
         if flow_rate > 0:
             self.valve.switch_position(self.valve.dispense_pos)
         else:
             self.valve.switch_position(self.valve.aspirate_pos)
+
         self._call('LCP_GenerateFlow', self._handle[0], flow_rate)
+
         if wait_until_done:
             # Wait until pumping has actually started.
             while not self.is_pumping:
@@ -747,7 +771,11 @@ class QmixPump(object):
             while self.is_pumping:
                 time.sleep(0.0005)
 
-    def fill(self, flow_rate, wait_until_done=False):
+            if switch_valve_when_done:
+                self.valve.switch_position(self.valve.aspirate_pos)
+
+    def fill(self, flow_rate, wait_until_done=False,
+             switch_valve_when_done=False):
         """
         Fill the syringe.
 
@@ -758,6 +786,10 @@ class QmixPump(object):
 
         wait_until_done : bool
             Whether to halt program execution until done.
+
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to dispense position after
+            the aspiration is finished. Implies `wait_until_done=True`.
 
         Raises
         ------
@@ -775,9 +807,14 @@ class QmixPump(object):
         if flow_rate <= 0:
             raise ValueError('Flow rate must be positive.')
 
-        self.generate_flow(-flow_rate, wait_until_done=wait_until_done)
+        if switch_valve_when_done:
+            wait_until_done = True
 
-    def empty(self, flow_rate, wait_until_done=False):
+        self.generate_flow(-flow_rate, wait_until_done=wait_until_done,
+                           switch_valve_when_done=switch_valve_when_done)
+
+    def empty(self, flow_rate, wait_until_done=False,
+              switch_valve_when_done=False):
         """
         Empty the syringe.
 
@@ -788,6 +825,10 @@ class QmixPump(object):
 
         wait_until_done : bool
             Whether to halt program execution until done.
+
+        switch_valve_when_done : bool
+            If set to ``True``, it switches valve to dispense position after
+            the aspiration is finished. Implies `wait_until_done=True`.
 
         Raises
         ------
@@ -803,7 +844,11 @@ class QmixPump(object):
         if flow_rate <= 0:
             raise ValueError('Flow rate must be positive.')
 
-        self.generate_flow(flow_rate, wait_until_done=wait_until_done)
+        if switch_valve_when_done:
+            wait_until_done = True
+
+        self.generate_flow(flow_rate, wait_until_done=wait_until_done,
+                           switch_valve_when_done=switch_valve_when_done)
 
     def stop(self):
         """
