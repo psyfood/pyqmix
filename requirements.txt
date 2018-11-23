@@ -1,5 +1,5 @@
 cffi
 ruamel.yaml
 appdirs
-pywin32
+pypiwin32
 -e .

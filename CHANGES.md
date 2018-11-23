@@ -5,6 +5,7 @@ Version 2018.xx.xx
   Python 3 before)
 * `switch_valve_when_done` keyword argument is now available for all pumping
   operations
+* Depend on `pypiwin32` instead of `pywin32`
 
 Version 2018.11.07
 ------------------
