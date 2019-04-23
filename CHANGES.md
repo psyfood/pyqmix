@@ -1,3 +1,7 @@
+Version 2019.1
+------------------
+* Handle non-existent configuration directory
+
 Version 2018.12.13
 ------------------
 * Update installation instructions
