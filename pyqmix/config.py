@@ -92,6 +92,11 @@ def get_available_qmix_configs(configs_dir=None):
     list of strings
         Names of available Qmix configurations.
 
+    Raises
+    ------
+    ValueError
+        If the configuration directory does not exist.
+
     """
     if configs_dir is None:
         configs_dir = DEFAULT_CONFIGS_DIR
@@ -99,6 +104,10 @@ def get_available_qmix_configs(configs_dir=None):
     def get_immediate_subdirectories(a_dir):
         return [name for name in os.listdir(a_dir)
                 if os.path.isdir(os.path.join(a_dir, name))]
+
+    if not os.path.exists(configs_dir):
+        msg = 'The configuration directory does not exist: %s' % configs_dir
+        raise ValueError(msg)
 
     return get_immediate_subdirectories(configs_dir)
 
