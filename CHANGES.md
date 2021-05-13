@@ -3,6 +3,7 @@ Version 2021.1
 * Improve automated DLL search path configuration; the DLLs should be loadable
   out-of-the-box in more situations now, including on systems running Python
   3.8 and newer.
+* Switch back to using `pywin32` instead of `pypiwin32`.
 
 Version 2019.1
 --------------
