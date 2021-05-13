@@ -88,16 +88,30 @@ def find_dll(dll_dir, dll_filename):
         dll_dir = appdirs.user_data_dir('QmixSDK', '')
         if os.path.exists(os.path.join(dll_dir, dll_filename)):
             dll_path = os.path.join(dll_dir, dll_filename)
-            # Add DLL dir to PATH, otherwise we won't be able to load the DLL.
-            os.environ['PATH'] += os.pathsep + dll_dir
+            # Add DLL dir to the DLL search path, otherwise we won't be able to
+            # load the DLL.
+            os.environ['PATH'] = dll_dir + os.pathsep + os.environ['PATH']
+            try:
+                # Python >= 3.8
+                os.add_dll_directory(dll_dir)
+            except NameError:
+                pass
+
             return dll_path
 
         return None
     else:
         if os.path.exists(os.path.join(dll_dir, dll_filename)):
             dll_path = os.path.join(dll_dir, dll_filename)
-            # Add DLL dir to PATH, otherwise we won't be able to load the DLL.
-            os.environ['PATH'] += os.pathsep + dll_dir
+            # Add DLL dir to the DLL search path, otherwise we won't be able to
+            # load the DLL.
+            os.environ['PATH'] = dll_dir + os.pathsep + os.environ['PATH']
+            try:
+                # Python >= 3.8
+                os.add_dll_directory(dll_dir)
+            except NameError:
+                pass
+
             return dll_path
         else:
             return None
