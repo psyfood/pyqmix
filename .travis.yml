@@ -12,6 +12,12 @@ matrix:
     - os: linux
       env: PYTHON_VERSION=3.7
 
+    - os: linux
+      env: PYTHON_VERSION=3.8
+
+    - os: linux
+      env: PYTHON_VERSION=3.9
+
 before_install:
   - pwd
   - ./travis/00_install_miniconda.sh
