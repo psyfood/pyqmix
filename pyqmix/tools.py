@@ -94,7 +94,7 @@ def find_dll(dll_dir, dll_filename):
             try:
                 # Python >= 3.8
                 os.add_dll_directory(dll_dir)
-            except NameError:
+            except AttributeError:
                 pass
 
             return dll_path
@@ -109,7 +109,7 @@ def find_dll(dll_dir, dll_filename):
             try:
                 # Python >= 3.8
                 os.add_dll_directory(dll_dir)
-            except NameError:
+            except AttributeError:
                 pass
 
             return dll_path

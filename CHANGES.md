@@ -1,3 +1,8 @@
+Version 2021.1.2
+----------------
+* The DLL search improvement introduced in 2021.1 is now working correctly for
+  Python 3.6 and 3.7, too.
+
 Version 2021.1
 --------------
 * Improve automated DLL search path configuration; the DLLs should be loadable
