@@ -225,7 +225,7 @@ class QmixPump(object):
         Returns
         -------
         bool
-            True - Device calibration has finished/was perfomed
+            True - Device calibration has finished/was performed
             False - Device is calibrating
 
         """

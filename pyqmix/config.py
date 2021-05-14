@@ -249,7 +249,7 @@ def set_pump_volume_unit(index, prefix, unit):
 
     prefix : str
         The prefix of the SIunit:
-        ``centi``, ``deci``, ``mircro``, ``milli``, ``unit``.
+        ``centi``, ``deci``, ``micro``, ``milli``, ``unit``.
 
     unit : str
         The volume unit identifier: ``litres``.

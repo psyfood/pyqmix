@@ -13,8 +13,8 @@ from .dio import QmixDigitalIO
 from . import config
 
 
-__all__ = [QmixBus, QmixPump, QmixValve, QmixExternalValve, QmixDigitalIO,
-           config]
+__all__ = ['QmixBus', 'QmixPump', 'QmixValve', 'QmixExternalValve',
+           'QmixDigitalIO', 'config']
 
 from ._version import get_versions
 __version__ = get_versions()['version']

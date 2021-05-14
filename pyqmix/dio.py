@@ -16,7 +16,7 @@ from .headers import DIGITAL_IO_HEADER
 
 class QmixDigitalIO(object):
     """
-    Qmix IO-B diglital I/O channel.
+    Qmix IO-B digital I/O channel.
 
     """
     def __init__(self, index=None, name=''):
@@ -83,7 +83,7 @@ class QmixDigitalIO(object):
 
     def write(self, state):
         """
-        Swicth digital output channel on/off.
+        Switch digital output channel on/off.
 
         Parameters
         ----------
