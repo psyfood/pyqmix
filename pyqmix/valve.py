@@ -155,7 +155,7 @@ class QmixExternalValve(QmixValve):
     Parameters
     ----------
     index : int, or None
-        Index of the DIO channel to istantiate. Takes precedence over the
+        Index of the DIO channel to instantiate. Takes precedence over the
         `name` parameter.
 
     name : str
